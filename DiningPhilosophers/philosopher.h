@@ -5,14 +5,13 @@
 #include "forkhandler.h"
 #include <thread>
 #include <chrono>
+#include <QThread>
 
-class Philosopher {
+class Philosopher : public QThread {
     static unsigned idCounter;
     const unsigned id;
     ForkHandler leftForkHandler;
     ForkHandler rightForkHandler;
-    std::queue<Request> requestsReceived;
-
 public:
     Philosopher(const unsigned leftForkId, const unsigned rightForkId) : id(idCounter++), leftForkHandler(leftForkId, id), rightForkHandler(rightForkId, id) {}
 
@@ -37,7 +36,7 @@ public:
     }
 
     void think() {
-
+        std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 
     void proceed() {
@@ -48,5 +47,18 @@ public:
            think();
            handleRequests();
         }
+    }
+
+    ForkHandler& getLeftForkHandler() noexcept {
+        return leftForkHandler;
+    }
+
+    ForkHandler& getRightForkHandler() noexcept {
+        return rightForkHandler;
+    }
+
+    void run() override {
+        while(true)
+            proceed();
     }
 };

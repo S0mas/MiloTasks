@@ -1,22 +1,9 @@
 #pragma once
 
-#include "fork.h"
-#include <queue>
+#include "msg.h"
+#include "request.h"
 #include <QObject>
-
-class Request {
-public:
-    const unsigned senderId;
-    const unsigned requestedForkId;
-    Request(const unsigned philosopherId, const unsigned requestedForkId) : senderId(philosopherId), requestedForkId(requestedForkId) {}
-};
-
-class Msg {
-public:
-    const unsigned receiverId;
-    Fork* fork;
-    Msg(const unsigned philosopherId, Fork* fork) : receiverId(philosopherId), fork(fork) {}
-};
+#include <queue>
 
 class ForkHandler : public QObject {
     Q_OBJECT

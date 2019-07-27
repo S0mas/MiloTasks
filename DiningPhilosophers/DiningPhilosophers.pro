@@ -31,4 +31,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     fork.h \
     forkhandler.h \
-    philosopher.h
+    philosopher.h \
+    msg.h \
+    request.h
