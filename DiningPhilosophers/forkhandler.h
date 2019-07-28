@@ -50,6 +50,10 @@ public:
         sendFork(req.senderId);
         requests.pop();
     }
+
+    void setFork(Fork* toSet) noexcept {
+        fork = toSet;
+    }
 signals:
     void sendReq(const Request);
     void sendMsg(const Msg);
@@ -59,8 +63,8 @@ public slots:
        requests.push(request);
     }
 
-    void receiveFork(Fork* receivedFork) {
+    void receiveFork(Msg* receivedFork) {
         requestSended = false;
-        fork = receivedFork;
+        fork = receivedFork->fork;
     }
 };

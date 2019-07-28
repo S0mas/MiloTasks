@@ -6,6 +6,7 @@
 #include <thread>
 #include <chrono>
 #include <QThread>
+#include <QDebug>
 
 class Philosopher : public QThread {
     static unsigned idCounter;
@@ -30,12 +31,15 @@ public:
     }
 
     void eat() {
+        qDebug() << "3.";
         std::this_thread::sleep_for(std::chrono::seconds(5));
         leftForkHandler.useFork();
         rightForkHandler.useFork();
+
     }
 
     void think() {
+        qDebug() << "2.";
         std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 
@@ -58,6 +62,7 @@ public:
     }
 
     void run() override {
+        qDebug() << "1.";
         while(true)
             proceed();
     }
