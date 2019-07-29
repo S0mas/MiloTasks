@@ -1,8 +1,7 @@
 #pragma once
 
 class Fork {
-    static unsigned idCounter;
-
+    inline static unsigned idCounter;
     bool dirty = true;
 public:
     const unsigned id;

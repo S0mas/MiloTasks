@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include "philosopher.h"
 #include <vector>
+#include <iostream>
 
 int main(int argc, char *argv[])
 {
@@ -20,44 +21,20 @@ int main(int argc, char *argv[])
 
     std::vector<Philosopher> philosophers(5);
     std::vector<Fork> forks(5);
-    philosophers[0].getLeftForkHandler().setFork(&forks[0]);
-    philosophers[0].getRightForkHandler().setFork(&forks[4]);
-    philosophers[1].getLeftForkHandler().setFork(&forks[1]);
-    philosophers[2].getLeftForkHandler().setFork(&forks[2]);
-    philosophers[3].getLeftForkHandler().setFork(&forks[3]);
 
-    QObject::connect(&philosophers[0]
-            .getLeftForkHandler(), SIGNAL(sendReq(const Request)), &philosophers[1]
-            .getRightForkHandler(), SLOT(receiveRequest(const Request)));
-    QObject::connect(&philosophers[0]
-            .getLeftForkHandler(), SIGNAL(sendMsg(const Msg)), &philosophers[1]
-            .getRightForkHandler(), SLOT(receiveFork(const Msg)));
-    QObject::connect(&philosophers[1]
-            .getLeftForkHandler(), SIGNAL(sendReq(const Request)), &philosophers[2]
-            .getRightForkHandler(), SLOT(receiveRequest(const Request)));
-    QObject::connect(&philosophers[1]
-            .getLeftForkHandler(), SIGNAL(sendMsg(const Msg)), &philosophers[2]
-            .getRightForkHandler(), SLOT(receiveFork(const Msg)));
-    QObject::connect(&philosophers[2]
-            .getLeftForkHandler(), SIGNAL(sendReq(const Request)), &philosophers[3]
-            .getRightForkHandler(), SLOT(receiveRequest(const Request)));
-    QObject::connect(&philosophers[2]
-            .getLeftForkHandler(), SIGNAL(sendMsg(const Msg)), &philosophers[3]
-            .getRightForkHandler(), SLOT(receiveFork(const Msg)));
-    QObject::connect(&philosophers[3]
-            .getLeftForkHandler(), SIGNAL(sendReq(const Request)), &philosophers[4]
-            .getRightForkHandler(), SLOT(receiveRequest(const Request)));
-    QObject::connect(&philosophers[3]
-            .getLeftForkHandler(), SIGNAL(sendMsg(const Msg)), &philosophers[4]
-            .getRightForkHandler(), SLOT(receiveFork(const Msg)));
-    QObject::connect(&philosophers[4]
-            .getLeftForkHandler(), SIGNAL(sendReq(const Request)), &philosophers[0]
-            .getRightForkHandler(), SLOT(receiveRequest(const Request)));
-    QObject::connect(&philosophers[4]
-            .getLeftForkHandler(), SIGNAL(sendMsg(const Msg)), &philosophers[0]
-            .getRightForkHandler(), SLOT(receiveFork(const Msg)));
+    philosophers[0].giveForks(&forks[0], &forks[4]);
+    philosophers[0].connectForkHandlers(&philosophers[1], &philosophers[4]);
+    for(auto i = 1u; i < forks.size()-1; ++i)
+        philosophers[i].giveForks(&forks[i], nullptr);
 
-    for(auto& philosoph : philosophers)
-        philosoph.run();
+    for(int i = 0; i < philosophers.size(); ++i) {
+        auto const& left = (i + 1) < philosophers.size() ? i + 1 : 0;
+        auto const& right = (i - 1) >= 0 ? i - 1 : philosophers.size() - 1;
+        std::cout << left << " " << right << std::endl;
+        philosophers[i].connectForkHandlers(&philosophers[left], &philosophers[right]);
+    }
+
+    for(auto& philosopher : philosophers)
+        philosopher.start();
     return app.exec();
 }

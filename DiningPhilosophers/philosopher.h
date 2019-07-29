@@ -7,44 +7,54 @@
 #include <chrono>
 #include <QThread>
 #include <QDebug>
+#include <QVector>
 
 class Philosopher : public QThread {
-    static unsigned idCounter;
+    inline static unsigned idCounter;
     const unsigned id;
-    ForkHandler leftForkHandler;
-    ForkHandler rightForkHandler;
+    std::vector<ForkHandler*> forkHandlers;
+
 public:
-    Philosopher(const unsigned leftForkId, const unsigned rightForkId) : id(idCounter++), leftForkHandler(leftForkId, id), rightForkHandler(rightForkId, id) {}
+    Philosopher() : id(idCounter++) {
+        forkHandlers.push_back(new ForkHandler());
+        forkHandlers.push_back(new ForkHandler());
+    }
 
     void sendRequests() {
-        if(leftForkHandler.isEmpty())
-            leftForkHandler.sendRequest();
-        if(rightForkHandler.isEmpty())
-            rightForkHandler.sendRequest();
+        for(auto& forkHandler : forkHandlers){
+            if(forkHandler->isEmpty())
+                forkHandler->sendRequest();
+        }
     }
 
     void handleRequests() {
-        if(leftForkHandler.isAvailable() && !leftForkHandler.isForkClean())
-            leftForkHandler.handleRequest();
-        if(rightForkHandler.isAvailable() && !rightForkHandler.isForkClean())
-            rightForkHandler.handleRequest();
+        for(auto& forkHandler : forkHandlers){
+            if(forkHandler->isAvailable() && forkHandler->getFork()->isDirty())
+                forkHandler->handleRequest();
+        }
     }
 
     void eat() {
-        qDebug() << "3.";
-        std::this_thread::sleep_for(std::chrono::seconds(5));
-        leftForkHandler.useFork();
-        rightForkHandler.useFork();
-
+        qDebug() << "EATING... id:" << id;
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+        for(auto& forkHandler : forkHandlers)
+           forkHandler->getFork()->use();
     }
 
     void think() {
-        qDebug() << "2.";
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        qDebug() << "THINKING... id:" << id;
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     void proceed() {
-        if(leftForkHandler.isAvailable() && leftForkHandler.isForkClean() && rightForkHandler.isAvailable() && rightForkHandler.isForkClean())
+        bool canEat = true;
+        for(auto& forkHandler : forkHandlers){
+            if(!forkHandler->isAvailable() || forkHandler->getFork()->isDirty()){
+                canEat = false;
+                break;
+            }
+        }
+        if(canEat)
             eat();
         else {
            sendRequests();
@@ -53,16 +63,18 @@ public:
         }
     }
 
-    ForkHandler& getLeftForkHandler() noexcept {
-        return leftForkHandler;
+    void giveForks(Fork* left, Fork* right) noexcept {
+        forkHandlers[0]->receiveFork(left);
+        forkHandlers[1]->receiveFork(right);
     }
 
-    ForkHandler& getRightForkHandler() noexcept {
-        return rightForkHandler;
+    void connectForkHandlers(Philosopher* onTheLeft, Philosopher* onTheRight) const noexcept {
+        forkHandlers[0]->connectForkHandler(onTheLeft->forkHandlers[1]);
+        forkHandlers[1]->connectForkHandler(onTheRight->forkHandlers[0]);
     }
 
     void run() override {
-        qDebug() << "1.";
+        qDebug() << "STARTED... id:" << id;
         while(true)
             proceed();
     }

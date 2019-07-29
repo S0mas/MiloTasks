@@ -1,23 +1,15 @@
 #pragma once
 
-#include "msg.h"
-#include "request.h"
 #include <QObject>
-#include <queue>
+#include "fork.h"
 
 class ForkHandler : public QObject {
     Q_OBJECT
-    const unsigned forkId;
-    const unsigned philosopherId;
     bool requestSended;
-    Fork* fork;
-    std::queue<Request> requests;
-    void sendFork(const unsigned receiverId) {
-       emit sendMsg(Msg(receiverId, fork));
-       fork = nullptr;
-    }
+    bool requestReceived;
+    Fork* fork = nullptr;
 public:
-    ForkHandler(const unsigned forkId,  const unsigned philosopherId) : forkId(forkId), philosopherId(philosopherId), requestSended(false) {}
+    ForkHandler() : requestSended(false) {}
 
     bool isEmpty() const noexcept {
         return fork == nullptr;
@@ -27,44 +19,43 @@ public:
         return !isEmpty();
     }
 
-    bool isForkClean() const noexcept {
-        return fork->isClean();
+    Fork* getFork() noexcept {
+        return fork;
     }
 
-    void useFork() const noexcept {
-        fork->use();
-    }
-
-    void sendRequest() {
+    void sendRequest() noexcept {
         if(!requestSended) {
             requestSended = true;
-            emit sendReq(Request(philosopherId, forkId));
+            emit sendReq();
         }
     }
 
-    void handleRequest() {
-        if(requests.empty())
-            return;
-        const auto req = requests.front();
-        fork->clean();
-        sendFork(req.senderId);
-        requests.pop();
+    void handleRequest() noexcept {
+        if(requestReceived){
+            fork->clean();
+            emit sendFork(fork);
+            fork = nullptr;
+            requestReceived = false;
+        }
     }
 
-    void setFork(Fork* toSet) noexcept {
-        fork = toSet;
+    void connectForkHandler(ForkHandler* forkHandler) const noexcept {
+        connect(this, SIGNAL(sendReq()), forkHandler, SLOT(receiveRequest()));
+        connect(this, SIGNAL(sendFork(Fork*)), forkHandler, SLOT(receiveFork(Fork*)));
+        connect(forkHandler, SIGNAL(sendReq()), this, SLOT(receiveRequest()));
+        connect(forkHandler, SIGNAL(sendFork(Fork*)), this, SLOT(receiveFork(Fork*)));
     }
 signals:
-    void sendReq(const Request);
-    void sendMsg(const Msg);
+    void sendReq();
+    void sendFork(Fork*);
 
 public slots:
-    void receiveRequest(const Request request) {
-       requests.push(request);
+    void receiveRequest() {
+        requestReceived = true;
     }
 
-    void receiveFork(Msg* receivedFork) {
+    void receiveFork(Fork* receivedFork) {
+        fork = receivedFork;
         requestSended = false;
-        fork = receivedFork->fork;
     }
 };
