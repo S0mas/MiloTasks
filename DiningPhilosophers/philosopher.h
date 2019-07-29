@@ -7,14 +7,15 @@
 #include <chrono>
 #include <QThread>
 #include <QDebug>
-#include <QVector>
+#include <QObject>
 
 class Philosopher : public QThread {
+    Q_OBJECT
     inline static unsigned idCounter;
-    const unsigned id;
     std::vector<ForkHandler*> forkHandlers;
-
+    bool eating = false;
 public:
+    const unsigned id;
     Philosopher() : id(idCounter++) {
         forkHandlers.push_back(new ForkHandler());
         forkHandlers.push_back(new ForkHandler());
@@ -35,14 +36,14 @@ public:
     }
 
     void eat() {
-        qDebug() << "EATING... id:" << id;
+        emit startEating();
         std::this_thread::sleep_for(std::chrono::seconds(2));
         for(auto& forkHandler : forkHandlers)
            forkHandler->getFork()->use();
+        emit stopEating();
     }
 
     void think() {
-        qDebug() << "THINKING... id:" << id;
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
@@ -73,9 +74,17 @@ public:
         forkHandlers[1]->connectForkHandler(onTheRight->forkHandlers[0]);
     }
 
+    bool isEating() const noexcept {
+        return eating;
+    }
+
     void run() override {
         qDebug() << "STARTED... id:" << id;
         while(true)
             proceed();
     }
+
+signals:
+    void startEating();
+    void stopEating();
 };
