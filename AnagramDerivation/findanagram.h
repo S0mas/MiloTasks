@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "DictionaryParser.h"
+#include "dictionaryparser.h"
 #include "wordsbasemap.h"
 #include "anagramderivative.h"
 #include <stack>
@@ -13,10 +13,6 @@ class AnagramDerivationAlg {
     WordsBaseMap wordsBaseMap;
     const std::vector<char> letters = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
 
-    bool isDerivation(const std::string& candidate, const std::string& base) const noexcept {
-        return false;
-    }
-
     std::set<std::string> findAnagrams(const std::string& word) noexcept {
         return wordsBaseMap.getAnagrams(word);
     }
@@ -25,7 +21,7 @@ class AnagramDerivationAlg {
         for(auto const& letter : letters) {
             auto const& biggerAnagrams = findAnagrams(anagramDerivative->base+letter);
             for(auto const& anagram : biggerAnagrams){
-               anagramDerivative->biggerAnagrams.push_back(new AnagramDerivative(anagram));
+               anagramDerivative->biggerAnagrams[letter].push_back(new AnagramDerivative(anagram));
             }
         }
     }
@@ -35,8 +31,13 @@ class AnagramDerivationAlg {
         auto root = nodesStack.top();
         nodesStack.pop();
         createBiggerAnagrams(root);
-        if(!root->biggerAnagrams.empty())
-            nodesStack.push(root->biggerAnagrams.back());
+        for(auto& anagramsPerLetter : root->biggerAnagrams)
+             for(auto& anagram : anagramsPerLetter.second)
+                 anagram->parent = root;
+
+        for(auto& anagramsPerLetter : root->biggerAnagrams)
+            if(!anagramsPerLetter.second.empty())
+                nodesStack.push(anagramsPerLetter.second.back());
         return true;
     }
 
@@ -45,9 +46,7 @@ public:
         auto result = new AnagramDerivative(base);
         std::stack<AnagramDerivative*> toCalculate;
         toCalculate.push(result);
-        while(findAnagramDerivationHelper(toCalculate)){
-            std::cout << ".";
-        }
+        while(findAnagramDerivationHelper(toCalculate)){}
         return result;
     }
 

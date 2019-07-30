@@ -9,11 +9,18 @@ class AnagramStringHash {
         {'c', 29}, {'u', 31}, {'d', 37}, {'p', 41}, {'m', 43}, {'h', 47}, {'g', 53}, {'b', 59}, {'f', 61},
         {'y', 67}, {'w', 71}, {'k', 73}, {'v', 79}, {'x', 83}, {'z', 89}, {'j', 97}, {'q', 101}
     };
-
+public:
     inline static unsigned mapLetterToPrime(const char& letter) noexcept {
         return lettersToPrimes.at(static_cast<char>(tolower(letter)));
     }
-public:
+
+    inline static char mapPrimeToLetter(const unsigned long long& prime) noexcept {
+        for(auto& pair : lettersToPrimes)
+            if(pair.second == prime)
+                return pair.first;
+        return 0;
+    }
+
     inline static unsigned long long hash(const std::string& word) noexcept {
         unsigned long long result = 1;
         for(auto const& letter : word)

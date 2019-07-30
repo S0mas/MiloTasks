@@ -1,12 +1,11 @@
 #pragma once
+#include <map>
 #include <string>
 #include <vector>
 
 struct AnagramDerivative {
     const std::string base;
-    std::vector<AnagramDerivative*> biggerAnagrams;
-
-    AnagramDerivative(const std::string& base) : base(base) {
-        biggerAnagrams.reserve(100);
-    }
+    std::map<char, std::vector<AnagramDerivative*>> biggerAnagrams;
+    AnagramDerivative* parent = nullptr;
+    AnagramDerivative(const std::string& base) : base(base) {}
 };
