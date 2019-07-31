@@ -27,7 +27,7 @@ public:
         std::ifstream infile(fileName);
         std::string line;
         while (std::getline(infile, line)){
-            tolower(line);
+            tolower(line);         
             if(auto c = isStrUsingInvalidChar(line))
                 Logger::warning("word: " + std::move(line) + " skipped, it contains unsupported character: " + *c);
             else

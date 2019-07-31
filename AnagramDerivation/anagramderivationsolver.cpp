@@ -34,7 +34,6 @@ AnagramDerivativeNode *AnagramDerivationSolver::findAnagramDerivationTree(const 
 }
 
 void AnagramDerivationSolver::createWordBaseFromFile(const std::string &fileName, const unsigned aproxlinesNo) {
-    AnagramStringHash::warnedAboutPerformance = false;
     anagramsBase.refill(fileName, aproxlinesNo);
 }
 
