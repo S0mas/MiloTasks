@@ -1,30 +1,66 @@
 #pragma once
-#include <map>
-#include <string>
+#include "logger.h"
+#include <array>
 #include <set>
+#include <string>
+#include <cstdint>
+#include <cmath>
 
 class AnagramStringHash {
-    inline static const std::map<char, unsigned> lettersToPrimes =  {
-        {'e', 2}, {'a', 3}, {'r', 5} , {'i', 7}, {'o', 11}, {'t', 13}, {'n', 17}, {'s', 19}, {'l', 23},
-        {'c', 29}, {'u', 31}, {'d', 37}, {'p', 41}, {'m', 43}, {'h', 47}, {'g', 53}, {'b', 59}, {'f', 61},
-        {'y', 67}, {'w', 71}, {'k', 73}, {'v', 79}, {'x', 83}, {'z', 89}, {'j', 97}, {'q', 101}
-    };
+    inline static constexpr std::array<uint8_t, 26> primes = { 3, 59, 29, 37, 2, 61, 53, 47, 7, 97,
+                                                           73, 23, 43, 17, 11, 41, 101, 5, 19, 13,
+                                                           31, 79, 71, 83, 67, 89};
+    inline static std::multiset<uint8_t> primeFactors(uint64_t number) {
+        if(!warnedAboutPerformance){
+            Logger::warning("Long words detected. Program needs to use more complicated hash function and will be much slower.");
+            warnedAboutPerformance = true;
+        }
+        std::multiset<uint8_t> set;
+        for(auto const& prime : primes){
+            if(number != 1){
+                while(number % prime == 0){
+                    set.insert(prime);
+                    number /= prime;
+                }
+            }
+        }
+
+        return set;
+    }
+
+    inline static std::multiset<uint8_t> handle64BitsOverflow(const uint64_t number) {
+        return primeFactors(number);
+    }
 public:
-    inline static unsigned mapLetterToPrime(const char& letter) noexcept {
-        return lettersToPrimes.at(static_cast<char>(tolower(letter)));
+    inline static bool warnedAboutPerformance = false;
+    using Hash = std::pair<uint64_t, std::multiset<uint8_t>>;
+    inline static uint8_t letterToPrime(const char& letter) {
+        return primes.at(static_cast<uint8_t>(letter)-0x61);
     }
 
-    inline static char mapPrimeToLetter(const unsigned long long& prime) noexcept {
-        for(auto& pair : lettersToPrimes)
-            if(pair.second == prime)
-                return pair.first;
-        return 0;
+    inline static char primeToLetter(const uint8_t& toFind) {
+        for(auto i = 0u; i < primes.size(); ++i)
+            if(primes[i] == toFind)
+                return static_cast<char>(0x61 + i);
+        throw std::runtime_error("Error! This prime number is not mapped to any letter");
     }
 
-    inline static unsigned long long hash(const std::string& word) noexcept {
-        unsigned long long result = 1;
-        for(auto const& letter : word)
-            result *= mapLetterToPrime(letter);
+    inline static Hash hash(const std::string& word) {
+        Hash result = {1, {}};
+        for(auto const& letter : word){
+            if(result.second.empty()) {
+                auto tmp = result.first;
+                result.first *= letterToPrime(letter);
+                if(tmp > result.first){
+                    result.second = handle64BitsOverflow(tmp);
+                    result.second.insert(letterToPrime(letter));
+                    result.first = 0;
+                }
+            }
+            else
+                result.second.insert(letterToPrime(letter));
+        }
+
         return result;
     }
 };

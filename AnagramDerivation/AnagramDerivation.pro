@@ -5,11 +5,15 @@ CONFIG += console
 QMAKE_CXXFLAGS += /std:c++17
 
 SOURCES += \
+        anagramderivationsolver.cpp \
+        anagramderivativenode.cpp \
+        anagramsbase.cpp \
         main.cpp
 
 HEADERS += \
-    anagramderivative.h \
+    anagramderivationsolver.h \
+    anagramderivativenode.h \
+    anagramsbase.h \
     anagramstringhash.h \
     dictionaryparser.h \
-    findanagram.h \
-    wordsbasemap.h
+    logger.h
