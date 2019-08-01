@@ -9,11 +9,11 @@ class AnagramDerivativeNode;
 
 class AnagramDerivationSolver {
     AnagramsBase anagramsBase;
-    std::set<std::string>& findAnagrams(const std::string& word);
+    AnagramsBase::AnagramsSet& findAnagrams(const std::string& word);
     void createDerivedAnagrams(AnagramDerivativeNode* node);
     bool findAnagramDerivationTreeHelper(std::stack<AnagramDerivativeNode*>& nodesStack);
-    AnagramDerivativeNode* findAnagramDerivationTree(const std::string& base);
+    std::unique_ptr<AnagramDerivativeNode> findAnagramDerivationTree(const std::string& base);
 public:
-    void createWordBaseFromFile(const std::string& fileName, const unsigned aproxlinesNo = 85000);
+    void createWordBaseFromFile(const std::string& fileName);
     std::vector<std::string> solve(std::string base);
 };

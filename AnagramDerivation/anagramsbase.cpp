@@ -5,27 +5,22 @@
 
 AnagramsBase::AnagramsBase() {}
 
-void AnagramsBase::refill(const std::string &fileName, const unsigned aproxlinesNo) {
+void AnagramsBase::refill(const std::string &fileName) {
     clear();
-    auto dictionary = DictionaryParser::parseDictionaryFromFile(fileName, aproxlinesNo);
+    DictionaryParser::parseDictionaryFromFile(fileName);
+    auto const& dictionary = DictionaryParser::dictionary;
     for(auto& word : dictionary)
-        addWord(std::move(word));
+        addWord(word);
 }
 
-void AnagramsBase::addWord(std::string &&word) {
-    if(auto option = AnagramStringHash::simpleHash(word))
-        container2[*option].insert(std::move(word));
-    else
-        container1[AnagramStringHash::hash(word)].insert(std::move(word));
+void AnagramsBase::addWord(const std::string& word) {
+    container[AnagramStringHash::cyclicHash(word)].insert(&word);
 }
 
 void AnagramsBase::clear() noexcept {
-    container1.clear();
-    container2.clear();
+    container.clear();
 }
 
-std::set<std::string>& AnagramsBase::getAnagrams(const std::string &word) {
-    if(auto option = AnagramStringHash::simpleHash(word))
-        return container2[*option];
-    return container1[AnagramStringHash::hash(word)];
+AnagramsBase::AnagramsSet& AnagramsBase::getAnagrams(const std::string& word) {
+    return container[AnagramStringHash::cyclicHash(word)];
 }

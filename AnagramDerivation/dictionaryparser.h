@@ -1,15 +1,13 @@
 #pragma once
 #include "logger.h"
-
 #include <array>
+#include <cctype>
 #include <fstream>
 #include <optional>
 #include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
-#include <cctype>
-#include <string>
 
 class DictionaryParser {
     inline static constexpr std::array<char, 26> letters = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
@@ -20,21 +18,23 @@ public:
                 return c;
         return {};
     }
-
-    inline static std::vector<std::string> parseDictionaryFromFile(const std::string& fileName, const unsigned aproxlinesNo) {
-        std::vector<std::string> result;
-        result.reserve(aproxlinesNo);
+    inline static std::vector<std::string> dictionary;
+    inline static void parseDictionaryFromFile(const std::string& fileName) {
+        dictionary.clear();
+        dictionary.reserve(100000);
         std::ifstream infile(fileName);
+        if(!infile.is_open()){
+            Logger::warning("File not opened correctly.");
+            return;
+        }
         std::string line;
         while (std::getline(infile, line)){
             tolower(line);         
             if(auto c = isStrUsingInvalidChar(line))
                 Logger::warning("word: " + std::move(line) + " skipped, it contains unsupported character: " + *c);
             else
-                result.push_back(std::move(line));
+                dictionary.push_back(std::move(line));
         }
-
-        return result;
     }
 
     inline static void tolower(std::string& string) {

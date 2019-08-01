@@ -7,7 +7,7 @@ void AnagramDerivativeNode::toStringHelper(std::string &result, const AnagramDer
     if(node->parent != nullptr){
         toStringHelper(result, node->parent);
         result += " + ";
-        result.push_back(AnagramStringHash::primeToLetter(static_cast<uint8_t>(2)));
+        result.push_back(node->differenceBetweenParent);
         result += " = ";
     }
     result += node->baseWord;
@@ -28,7 +28,16 @@ void AnagramDerivativeNode::findBiggestHelper(size_t &depth, const AnagramDeriva
     }
 }
 
-AnagramDerivativeNode::AnagramDerivativeNode(const std::string &base, AnagramDerivativeNode* parent) : baseWord(base), parent(parent) {}
+AnagramDerivativeNode::AnagramDerivativeNode(const std::string &base, AnagramDerivativeNode* parent, const char differenceBetweenParent)
+    : baseWord(base), parent(parent), differenceBetweenParent(differenceBetweenParent) {
+}
+
+AnagramDerivativeNode::~AnagramDerivativeNode() {
+    for(auto const& map : mapOfChildsVectorsByLetter)
+        for(auto const& node : map.second)
+            delete node;
+    mapOfChildsVectorsByLetter.clear();
+}
 
 std::string AnagramDerivativeNode::toString() {
     std::string result;
@@ -43,10 +52,10 @@ std::vector<AnagramDerivativeNode *> AnagramDerivativeNode::findLongest() {
     return result;
 }
 
-void AnagramDerivativeNode::addAnagramDerivatives(const char letter, const std::set<std::string>& anagrams) {
+void AnagramDerivativeNode::addAnagramDerivatives(const char letter, const AnagramsBase::AnagramsSet& anagrams) {
     std::vector<AnagramDerivativeNode*> v;
     v.reserve(anagrams.size());
     std::transform(anagrams.begin(), anagrams.end(), std::back_inserter(v),
-                   [this](const std::string& anagram) -> AnagramDerivativeNode* { return new AnagramDerivativeNode(anagram, this); });
+                   [this, letter](const std::string* anagram) -> AnagramDerivativeNode* { return new AnagramDerivativeNode(*anagram, this, letter); });
     mapOfChildsVectorsByLetter[letter] = v;
 }
