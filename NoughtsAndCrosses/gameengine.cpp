@@ -1,6 +1,6 @@
 #include "gameengine.h"
 #include <QCoreApplication>
-
+#include <QDebug>
 unsigned GameEngine::positionToColumn(const unsigned position) const noexcept {
     return position%boardSideSize;
 }
@@ -8,12 +8,21 @@ unsigned GameEngine::positionToColumn(const unsigned position) const noexcept {
 unsigned GameEngine::positionToRow(const unsigned position) const noexcept {
     return position/boardSideSize;
 }
+
 unsigned GameEngine::columnAndRowToPosition(const unsigned column, const unsigned row) const noexcept {
     return column + row*boardSideSize;
 }
 
-SignType GameEngine::getOpositPlayer(const SignType player) const noexcept {
-    return player == SignType::Cross ? SignType::Nought : SignType::Cross;
+static MyEnums::SignType mapUnsignedToSignType(const unsigned sign) {
+    return sign ? MyEnums::SignType::Cross : MyEnums::SignType::Nought;
+}
+
+static unsigned mapSignTypeToUnsigned(const MyEnums::SignType sign) {
+    return sign == MyEnums::SignType::Cross ? 1 : 0;
+}
+
+MyEnums::SignType GameEngine::getOpositPlayer(const MyEnums::SignType player) const noexcept {
+    return player == MyEnums::SignType::Cross ? MyEnums::SignType::Nought : MyEnums::SignType::Cross;
 }
 
 bool GameEngine::isBoardFull() const noexcept {
@@ -21,8 +30,8 @@ bool GameEngine::isBoardFull() const noexcept {
 }
 
 void GameEngine::swapActivePlayer() noexcept {
-    activePlayer = activePlayer == SignType::Cross ? SignType::Nought : SignType::Cross;
-    emit playerChanged(activePlayer);
+    activePlayer = getOpositPlayer(activePlayer);
+    emit playerChanged(mapSignTypeToUnsigned(activePlayer));
 }
 
 void GameEngine::checkGameStatus() noexcept {
@@ -33,12 +42,13 @@ void GameEngine::checkGameStatus() noexcept {
             }
     //draw
     if(isBoardFull()){
-        emit gameEnded(SignType::Empty, {});
+        emit gameEnded(MyEnums::SignType::Empty, {});
         gameInProgress = false;
     }
 }
 
-GameEngine::GameEngine(QObject *parent) : QObject(parent), activePlayer(SignType::Cross) {}
+GameEngine::GameEngine(QObject *parent) : QObject(parent), activePlayer(MyEnums::SignType::Cross) {
+}
 
 void GameEngine::newGame() {
    reset();
@@ -46,12 +56,13 @@ void GameEngine::newGame() {
    gameInProgress = true;
 }
 
-void GameEngine::move(const unsigned column, const unsigned row, SignType sign) {
+void GameEngine::move(const unsigned column, const unsigned row, const unsigned sign) {
     if(gameInProgress) {
         auto position = columnAndRowToPosition(column, row);
-        if(sign == activePlayer && board[position].sign == SignType::Empty){
-            board[position].sign = sign;
-            emit updateSquare(column, row, sign);
+        auto signType = mapUnsignedToSignType(sign);
+        if(signType == activePlayer && board[position].sign == MyEnums::SignType::Empty){
+            board[position].sign = signType;
+            emit updateSquare(column, row, signType);
             checkGameStatus();
             swapActivePlayer();
             QCoreApplication::processEvents();
@@ -73,15 +84,15 @@ void GameEngine::undo() {
         const auto square = moves.top();
         moves.pop();
         swapActivePlayer();
-        emit updateSquare(square%3, square/3, SignType::Empty);
+        emit updateSquare(square%3, square/3, MyEnums::SignType::Empty);
     }
 }
 
-void GameEngine::toggleAi(const SignType sign) {
+void GameEngine::toggleAi(const MyEnums::SignType sign) {
     aiStatus[sign] = !aiStatus[sign];
 }
 
-std::optional<unsigned> GameEngine::findWinningMove(const SignType player) const noexcept {
+std::optional<unsigned> GameEngine::findWinningMove(const MyEnums::SignType player) const noexcept {
     for(auto const& element : columnsRowsOrDiagonals){
         unsigned playerSignsCounter = 0;
         unsigned emptyCounter = 0;
@@ -89,7 +100,7 @@ std::optional<unsigned> GameEngine::findWinningMove(const SignType player) const
         for(auto const& position : element){
             if(board[position].sign == player)
                 ++playerSignsCounter;
-            else if(board[position].sign == SignType::Empty){
+            else if(board[position].sign == MyEnums::SignType::Empty){
                 candidate = position;
                 ++emptyCounter;
             }
@@ -104,7 +115,7 @@ unsigned GameEngine::findBestMove() const noexcept {
     unsigned maxSignCounter = 0;
     unsigned bestMove = 0;
     for(auto i = 0u; i < board.size(); ++i){
-        if(board[i].sign == SignType::Empty) {
+        if(board[i].sign == MyEnums::SignType::Empty) {
             auto boardCopy = board;
             boardCopy[i].sign = activePlayer;
             unsigned signCounter = 0;
@@ -127,11 +138,12 @@ unsigned GameEngine::findBestMove() const noexcept {
 
 void GameEngine::moveAI() noexcept {
     if(auto position = findWinningMove(activePlayer))
-        move(*position%boardSideSize, *position/boardSideSize, activePlayer);
+        move(*position%boardSideSize, *position/boardSideSize, mapSignTypeToUnsigned(activePlayer));
     else if(auto position = findWinningMove(getOpositPlayer(activePlayer)))
-        move(*position%boardSideSize, *position/boardSideSize, activePlayer);
+        move(*position%boardSideSize, *position/boardSideSize, mapSignTypeToUnsigned(activePlayer));
     else {
         auto bestMove = findBestMove();
-        move(positionToColumn(bestMove), positionToRow(bestMove), activePlayer);
+        move(positionToColumn(bestMove), positionToRow(bestMove), mapSignTypeToUnsigned(activePlayer));
     }
 }
+

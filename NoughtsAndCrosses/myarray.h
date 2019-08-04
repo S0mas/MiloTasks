@@ -1,7 +1,7 @@
 #pragma once
 #include <array>
 template<typename T, const unsigned SIZE>
-class myArray : std::array<unsigned, SIZE> {
+class myArray : public std::array<unsigned, SIZE> {
     unsigned counter = 0;
 public:
     constexpr myArray(){}
@@ -13,5 +13,13 @@ public:
     }
     void pop_back() {
         --counter;
+    }
+
+    size_t size() const noexcept {
+        return counter;
+    }
+
+    bool empty() const noexcept {
+        return size() == 0;
     }
 };

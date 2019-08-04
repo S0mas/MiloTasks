@@ -5,7 +5,6 @@
 #include <stack>
 #include <QObject>
 
-
 class GameEngine : public QObject {
     Q_OBJECT
     static constexpr unsigned boardSideSize = 3;
@@ -19,32 +18,31 @@ class GameEngine : public QObject {
         Square(0,1), Square(1,1), Square(2,1),
         Square(0,2), Square(1,2), Square(2,2)};
     std::stack<unsigned, myArray<unsigned, 9>> moves;
-    SignType activePlayer;
-    std::map<SignType, bool> aiStatus;
+    MyEnums::SignType activePlayer;
+    std::map<MyEnums::SignType, bool> aiStatus;
     bool gameInProgress;
 
     bool isBoardFull() const noexcept;
     void checkGameStatus() noexcept;
     void swapActivePlayer() noexcept;
-    SignType getOpositPlayer(const SignType player) const noexcept;
+    MyEnums::SignType getOpositPlayer(const MyEnums::SignType player) const noexcept;
     void moveAI() noexcept;
-    std::optional<unsigned> findWinningMove(const SignType player) const noexcept;
+    std::optional<unsigned> findWinningMove(const MyEnums::SignType player) const noexcept;
     unsigned findBestMove() const noexcept;
     unsigned positionToColumn(const unsigned position) const noexcept;
     unsigned positionToRow(const unsigned position) const noexcept;
     unsigned columnAndRowToPosition(const unsigned column, const unsigned row) const noexcept;
 public:
-    Q_ENUMS(SignType)
     explicit GameEngine(QObject *parent = nullptr);
 signals:
-    void gameEnded(SignType winner, ColumnRowDiagonal squares = {});
-    void playerChanged(SignType player);
+    void gameEnded(MyEnums::SignType winner, ColumnRowDiagonal squares = {});
+    void playerChanged(const unsigned player);
     void badMove();
-    void updateSquare(const unsigned column, const unsigned row, SignType sign);
+    void updateSquare(const unsigned column, const unsigned row, const MyEnums::SignType& sign);
 public slots:
     void newGame();
-    void move(const unsigned column, const unsigned row, SignType sign);
+    Q_INVOKABLE void move(const unsigned column, const unsigned row, const unsigned sign);
     void reset();
     void undo();
-    void toggleAi(const SignType sign);
+    void toggleAi(const MyEnums::SignType sign);
 };
