@@ -5,7 +5,7 @@ Window {
     visible: true
     width: boardId.width
     height: boardId.height + scoreRowId.height + buttonsColumnId.height
-    title: qsTr("Hello World")
+    title: qsTr("Nought and Crosses")
     property int activePlayerSign: 1
     property int startX: 0
     property int startY: 0
