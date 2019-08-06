@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <limits>
 #include <QDebug>
 #include <QObject>
 #include <QString>
@@ -12,7 +13,7 @@ class MorseCode : public QObject {
         for(auto index = 0u; index < morseCode.size(); ++index)
             if(morseCode[index] == '.')
                 result |= (1 << index);
-            else
+            else if(morseCode[index] == '-')
                 result |= (1 << (index+8));
         return result;
     }
@@ -20,161 +21,163 @@ class MorseCode : public QObject {
     QString getMorseCode(const char& sign) const noexcept {
         return morseSigns[static_cast<uint8_t>(sign)];
     }
+
+    QChar getNormalSign(const QString& morseCode) const noexcept {
+        return QChar::fromLatin1(normalSigns[hash(morseCode)]);
+    }
 public:
-    std::array<char, 65282> normalSigns;
+    std::array<char, std::numeric_limits<uint16_t>::max()+1> normalSigns;
+    std::array<QString, std::numeric_limits<uint8_t>::max()+1> morseSigns;
 
-    std::array<QString, 255> morseSigns;
-
-
+    //At the end of each morse code element, there should be ' ' and two ' ' between words in translation.
+    //Therefore ' ' should be translated to ' ' and last ' ' in translation should be erased if it is not empty text)
     MorseCode() {
         for(auto& element : morseSigns)
             element = "";
-        morseSigns['A'] = ".-";
-        morseSigns['a'] = ".-";
+        morseSigns['A'] = ".- ";
+        morseSigns['a'] = ".- ";
 
-        morseSigns['B'] = "-...";
-        morseSigns['b'] = "-...";
+        morseSigns['B'] = "-... ";
+        morseSigns['b'] = "-... ";
 
-        morseSigns['C'] = "-.-.";
-        morseSigns['c'] = "-.-.";
+        morseSigns['C'] = "-.-. ";
+        morseSigns['c'] = "-.-. ";
 
-        morseSigns['D'] = "-..";
-        morseSigns['d'] = "-..";
+        morseSigns['D'] = "-.. ";
+        morseSigns['d'] = "-.. ";
 
-        morseSigns['E'] = ".";
-        morseSigns['e'] = ".";
+        morseSigns['E'] = ". ";
+        morseSigns['e'] = ". ";
 
-        morseSigns['F'] = "..-.";
-        morseSigns['f'] = "..-.";
+        morseSigns['F'] = "..-. ";
+        morseSigns['f'] = "..-. ";
 
-        morseSigns['G'] = "--.";
-        morseSigns['g'] = "--.";
+        morseSigns['G'] = "--. ";
+        morseSigns['g'] = "--. ";
 
-        morseSigns['H'] = "....";
-        morseSigns['h'] = "....";
+        morseSigns['H'] = ".... ";
+        morseSigns['h'] = ".... ";
 
-        morseSigns['I'] = "..";
-        morseSigns['i'] = "..";
+        morseSigns['I'] = ".. ";
+        morseSigns['i'] = ".. ";
 
-        morseSigns['J'] = ".---";
-        morseSigns['j'] = ".---";
+        morseSigns['J'] = ".--- ";
+        morseSigns['j'] = ".--- ";
 
-        morseSigns['K'] = "-.-";
-        morseSigns['k'] = "-.-";
+        morseSigns['K'] = "-.- ";
+        morseSigns['k'] = "-.- ";
 
-        morseSigns['L'] = ".-..";
-        morseSigns['l'] = ".-..";
+        morseSigns['L'] = ".-.. ";
+        morseSigns['l'] = ".-.. ";
 
-        morseSigns['M'] = "--";
-        morseSigns['m'] = "--";
+        morseSigns['M'] = "-- ";
+        morseSigns['m'] = "-- ";
 
-        morseSigns['N'] = "-.";
-        morseSigns['n'] = "-.";
+        morseSigns['N'] = "-. ";
+        morseSigns['n'] = "-. ";
 
-        morseSigns['O'] = "---";
-        morseSigns['o'] = "---";
+        morseSigns['O'] = "--- ";
+        morseSigns['o'] = "--- ";
 
-        morseSigns['P'] = ".--.";
-        morseSigns['p'] = ".--.";
+        morseSigns['P'] = ".--. ";
+        morseSigns['p'] = ".--. ";
 
-        morseSigns['Q'] = "--.-";
-        morseSigns['q'] = "--.-";
+        morseSigns['Q'] = "--.- ";
+        morseSigns['q'] = "--.- ";
 
-        morseSigns['R'] = ".-.";
-        morseSigns['r'] = ".-.";
+        morseSigns['R'] = ".-. ";
+        morseSigns['r'] = ".-. ";
 
-        morseSigns['S'] = "...";
-        morseSigns['s'] = "...";
+        morseSigns['S'] = "... ";
+        morseSigns['s'] = "... ";
 
-        morseSigns['T'] = "-";
-        morseSigns['t'] = "-";
+        morseSigns['T'] = "- ";
+        morseSigns['t'] = "- ";
 
-        morseSigns['U'] = "..-";
-        morseSigns['u'] = "..-";
+        morseSigns['U'] = "..- ";
+        morseSigns['u'] = "..- ";
 
-        morseSigns['V'] = "...-";
-        morseSigns['v'] = "...-";
+        morseSigns['V'] = "...- ";
+        morseSigns['v'] = "...- ";
 
-        morseSigns['W'] = ".--";
-        morseSigns['w'] = ".--";
+        morseSigns['W'] = ".-- ";
+        morseSigns['w'] = ".-- ";
 
-        morseSigns['X'] = "-..-";
-        morseSigns['x'] = "-..-";
+        morseSigns['X'] = "-..- ";
+        morseSigns['x'] = "-..- ";
 
-        morseSigns['Y'] = "-.--";
-        morseSigns['y'] = "-.--";
+        morseSigns['Y'] = "-.-- ";
+        morseSigns['y'] = "-.-- ";
 
-        morseSigns['Z'] = "--..";
-        morseSigns['z'] = "--..";
+        morseSigns['Z'] = "--.. ";
+        morseSigns['z'] = "--.. ";
 
-        morseSigns['1'] = ".----";
+        morseSigns['1'] = ".---- ";
 
-        morseSigns['2'] = "..---";
+        morseSigns['2'] = "..--- ";
 
-        morseSigns['3'] = "...--";
+        morseSigns['3'] = "...-- ";
 
-        morseSigns['4'] = "....-";
+        morseSigns['4'] = "....- ";
 
-        morseSigns['5'] = ".....";
+        morseSigns['5'] = "..... ";
 
-        morseSigns['6'] = "-....";
+        morseSigns['6'] = "-.... ";
 
-        morseSigns['7'] = "--...";
+        morseSigns['7'] = "--... ";
 
-        morseSigns['8'] = "---..";
+        morseSigns['8'] = "---.. ";
 
-        morseSigns['9'] = "----.";
+        morseSigns['9'] = "----. ";
 
-        morseSigns['0'] = "-----";
+        morseSigns['0'] = "----- ";
 
-        morseSigns[','] = "--..--";
+        morseSigns[','] = "--..-- ";
 
-        morseSigns['?'] = "..--..";
+        morseSigns['?'] = "..--.. ";
 
-        morseSigns['.'] = ".--.--.-";
+        morseSigns['.'] = ".--.--.- ";
 
-        morseSigns['\''] = ".-------.";
+        morseSigns['\''] = ".-------. ";
 
-        morseSigns[':'] = "------..-";
+        morseSigns[':'] = "------..- ";
 
-        morseSigns[';'] = "--.--.--.";
+        morseSigns[';'] = "--.--.--. ";
 
-        morseSigns['!'] = "-.-.--";
+        morseSigns['!'] = "-.-.-- ";
 
-        morseSigns['='] = "--...-";
+        morseSigns['='] = "--...- ";
 
-        morseSigns['+'] = ".--.-.";
+        morseSigns['+'] = ".--.-. ";
 
-        morseSigns['-'] = "--....-";
+        morseSigns['-'] = "--....- ";
 
-        morseSigns['_'] = "..----.-";
+        morseSigns['_'] = "..----.- ";
 
-        morseSigns['"'] = ".--..-.";
+        morseSigns['"'] = ".--..-. ";
 
-        morseSigns['$'] = "...--..-";
+        morseSigns['$'] = "...--..- ";
 
-        morseSigns['@'] = ".----.--.";
+        morseSigns['@'] = ".----.--. ";
 
-        morseSigns['&'] = ".--...";
+        morseSigns['&'] = ".--... ";
 
-        morseSigns['/'] = "--..--.-";
+        morseSigns['/'] = "--..--.- ";
+
+        morseSigns[' '] = " ";
 
         for(auto& element : normalSigns)
             element = 0;
 
-        for(uint8_t asciiCode = 0u; asciiCode < morseSigns.size(); ++asciiCode)
+        for(auto asciiCode = 0u; asciiCode < morseSigns.size(); ++asciiCode)
             normalSigns[hash(morseSigns[asciiCode])] = static_cast<char>(asciiCode);
-    }
-
-    QChar getNormalSign(const QString& morseCode) const noexcept {
-        return QChar::fromLatin1(normalSigns[hash(morseCode)]);
     }
 
     Q_INVOKABLE QString translateToMorseCode(const QString& normalText) const noexcept {
         QString result;
         result.reserve(normalText.size()*5);
         for(auto const& c : normalText)
-            result += getMorseCode(c.toLatin1()) + " ";
+            result += getMorseCode(c.toLatin1());
         if(result.size() != 0)
             result.chop(1);
         return result;

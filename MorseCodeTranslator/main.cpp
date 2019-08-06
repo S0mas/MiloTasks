@@ -11,7 +11,6 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
     MorseCode morseCodeTranslator;
-
     engine.rootContext()->setContextProperty("translator", &morseCodeTranslator);
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
     if (engine.rootObjects().isEmpty())

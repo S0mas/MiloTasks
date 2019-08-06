@@ -1,11 +1,39 @@
 import QtQuick 2.11
 import QtQuick.Controls 2.4
+import QtQuick.Dialogs 1.2
 
 Rectangle {
     id: rectId
-    signal clickedLoad()
-    signal clickedSave()
     property alias textArea : textAreaId
+    FileDialog {
+        id: fileDialogLoadId
+        title: "Please choose a file to load"
+        modality: Qt.ApplicationModal
+        nameFilters: [ "Text files (*.txt)" ]
+        onAccepted: {
+            var request = new XMLHttpRequest()
+            request.open('GET', fileUrls)
+            request.onreadystatechange = function(event) {
+                if (request.readyState == XMLHttpRequest.DONE)
+                    textArea.text = request.responseText
+            }
+            request.send()
+        }
+    }
+
+    FileDialog {
+        id: fileDialogSaveId
+        title: "Please choose file to save"
+        modality: Qt.ApplicationModal
+        nameFilters: [ "Text files (*.txt)" ]
+        selectExisting: false
+        onAccepted: {
+            var request = new XMLHttpRequest();
+            request.open("PUT", fileUrl, false);
+            request.send(textArea.text);
+            return request.status;
+        }
+    }
     Column {
         width:parent.width
         height:parent.height
@@ -14,7 +42,7 @@ Rectangle {
             width:parent.width
             height:20
             onClicked: {
-                rectId.clickedLoad()
+                fileDialogLoadId.open()
             }
             text: "Load from file"
         }
@@ -24,7 +52,7 @@ Rectangle {
             width:parent.width
             height:20
             onClicked: {
-                rectId.clickedSave()
+                fileDialogSaveId.open()
             }
             text: "Save to file"
         }
