@@ -1,6 +1,8 @@
 import QtQuick 2.11
 import QtQuick.Window 2.11
 import QtQuick.Controls 2.4
+import Philosophers 1.0
+
 
 Window {
     visible: true
@@ -18,7 +20,7 @@ Window {
             height: 30
             text: "add"
             onClicked: {
-                modelFull.add()
+                philosopherList.appendItem()
             }
         }
 }

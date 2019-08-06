@@ -1,30 +1,46 @@
 #include "philosophersmodel.h"
 
-
-QQmlListProperty<Philosopher> PhilosophersModel::list() {
-    return QQmlListProperty<Philosopher>(this, this,
-                                         &PhilosophersModel::append,
-                                         &PhilosophersModel::count,
-                                         &PhilosophersModel::philosopher,
-                                         &PhilosophersModel::clear);
+PhilosopherList *PhilosophersModel::list() const {
+    return philosopherList;
 }
 
-void PhilosophersModel::append(Philosopher *)
-{
+void PhilosophersModel::setList(PhilosopherList *list) {
+    beginResetModel();
+    if(philosopherList)
+        philosopherList->disconnect(this);
+    philosopherList = list;
 
+    if(philosopherList){
+        connect(philosopherList, &PhilosopherList::preItemAppended, this, [=]() {
+            const auto index = philosopherList->items().size();
+            beginInsertRows(QModelIndex(), index, index);
+        });
+
+        connect(philosopherList, &PhilosopherList::postItemAppended, this, [=]() {
+            endInsertRows();
+        });
+
+        connect(philosopherList, &PhilosopherList::preItemRemoved, this, [=](int index) {
+            beginRemoveRows(QModelIndex(), index, index);
+        });
+
+        connect(philosopherList, &PhilosopherList::postItemRemoved, this, [=]() {
+            endRemoveRows();
+        });
+    }
+    endResetModel();
 }
 
-int PhilosophersModel::count() const
-{
-
+int PhilosophersModel::rowCount(const QModelIndex& parent) const {
+    if(parent.isValid() || !philosopherList)
+        return 0;
+    return philosopherList->items().size();
 }
 
-Philosopher *PhilosophersModel::philosopher(int) const
-{
+QVariant PhilosophersModel::data(const QModelIndex& index, int role) const {
+    int i = index.row();
+    if (!philosopherList || i < 0 || i >= philosopherList->items().size())
+        return QVariant(QVariant::Invalid);
 
-}
-
-void PhilosophersModel::clear()
-{
-
+    return QVariant::fromValue(philosopherList->items().at(i));
 }

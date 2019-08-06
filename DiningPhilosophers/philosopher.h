@@ -1,4 +1,5 @@
 #pragma once
+#include "permission.h"
 #include "request.h"
 
 #include <utility>
@@ -15,19 +16,21 @@
 
 class Philosopher : public QThread {
     Q_OBJECT
-    inline static int idCounter;
+    inline static int idCounter = 1;
     int id;
     bool requestSended = false;
     bool eats = false;
     bool canEat = false;
     std::vector<int> neededResourceIds;
+    std::vector<int> handledResourcesIds;
 
     void eat() noexcept {
         eats = true;
         emit eatingChanged();
-        std::this_thread::sleep_for(std::chrono::seconds(QRandomGenerator::global()->generate()%5 + 1));
-        for(auto const& id : neededResourceIds)
+        std::this_thread::sleep_for(std::chrono::seconds(QRandomGenerator::global()->generate()%3 + 1));
+        for(auto const& id : handledResourcesIds)
             emit releaseResource(id);
+        handledResourcesIds.clear();
         eats = false;
         emit eatingChanged();
         canEat = false;
@@ -39,8 +42,14 @@ class Philosopher : public QThread {
 public:
     Q_PROPERTY(bool eating MEMBER eats NOTIFY eatingChanged)
     Q_PROPERTY(int index MEMBER id NOTIFY indexChanged)
+    Philosopher(): id(idCounter++){}
+    Philosopher(const std::vector<int>& neededResourceIds) : id(idCounter++), neededResourceIds(neededResourceIds) {
+        qDebug() << "Philosopher created with id" << id << " needed reasourcesIds: " << neededResourceIds[0] << " " << neededResourceIds[1];
+    }
 
-    Philosopher(const std::vector<int>& neededResourceIds) : id(idCounter++), neededResourceIds(neededResourceIds) {}
+    void modifyNeededResources(const std::vector<int>& resourceIds) noexcept {
+        neededResourceIds = resourceIds;
+    }
 
     void run() {
         while(true){
@@ -61,8 +70,9 @@ signals:
     void sendRequest(const Request& request);
     void releaseResource(const int& id) const;
 public slots:
-    void permissionGranted(const int& sender) noexcept {
-        if(sender == id) {
+    void permissionGranted(const Permission& permission) noexcept {
+        if(permission.sender == id) {
+            handledResourcesIds = permission.resourceIds;
             requestSended = false;
             canEat = true;
         }

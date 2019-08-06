@@ -5,6 +5,7 @@
 #include <vector>
 #include <iostream>
 #include <QDebug>
+#include <QQmlComponent>
 #include "waiter.h"
 
 int main(int argc, char *argv[]) {
@@ -13,13 +14,14 @@ int main(int argc, char *argv[]) {
     QGuiApplication app(argc, argv);
 
     qRegisterMetaType<Request>();
-    qmlRegisterType<PhilosophersModel>();
+    qRegisterMetaType<Permission>();
     qmlRegisterType<Philosopher>();
+    qmlRegisterType<PhilosophersModel>("Philosophers", 1, 0, "PhilosophersModel");
+    qmlRegisterType<PhilosopherList>("Philosophers", 1, 0, "PhilosopherList");
 
-    PhilosophersModel model;
     QQmlApplicationEngine engine;
-    engine.rootContext()->setContextProperty("modelFull", &model);
-
+    PhilosopherList philosopherList;
+    engine.rootContext()->setContextProperty(QStringLiteral("philosopherList"), &philosopherList);
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {
@@ -28,6 +30,5 @@ int main(int argc, char *argv[]) {
     }, Qt::QueuedConnection);
     engine.load(url);
 
-    model.start();
     return app.exec();
 }

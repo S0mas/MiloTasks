@@ -16,7 +16,8 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
     philosophersmodel.cpp \
-    waiter.cpp
+    waiter.cpp \
+    philosopherlist.cpp
 
 RESOURCES += qml.qrc
 
@@ -35,6 +36,8 @@ HEADERS += \
     philosopher.h \
     philosophersmodel.h \
     request.h \
-    waiter.h
+    waiter.h \
+    philosopherlist.h \
+    permission.h
 
 DISTFILES +=
