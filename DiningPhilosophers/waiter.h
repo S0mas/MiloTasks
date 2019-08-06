@@ -114,6 +114,7 @@ signals:
 public slots:
     void receiveRequest(const Request& request) noexcept {
         requests.push_back(request);
+        qDebug() << "Request received" << request.sender;
     }
 
     void resourceReleased(const int& resourceId) noexcept {

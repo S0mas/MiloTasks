@@ -1,23 +1,21 @@
 #include "philosopherlist.h"
 
 PhilosopherList::PhilosopherList(QObject *parent) : QObject(parent) {
-    mItems.append(new Philosopher({0, 1}));
-    mItems.append(new Philosopher({1, 2}));
-    mItems.append(new Philosopher({2, 3}));
-    mItems.append(new Philosopher({3, 4}));
-    mItems.append(new Philosopher({4, 0}));
+    mItems.emplace_back(std::make_unique<Philosopher>(std::vector<int>({0, 1}), &waiter));
+    mItems.emplace_back(std::make_unique<Philosopher>(std::vector<int>({1, 2}), &waiter));
+    mItems.emplace_back(std::make_unique<Philosopher>(std::vector<int>({2, 3}), &waiter));
+    mItems.emplace_back(std::make_unique<Philosopher>(std::vector<int>({3, 4}), &waiter));
+    mItems.emplace_back(std::make_unique<Philosopher>(std::vector<int>({4, 0}), &waiter));
 
     for(auto resourceId = 0; resourceId < mItems.size(); ++resourceId)
         waiter.registerResource(resourceId);
-    for(auto philosopher : mItems) {
-        QObject::connect(philosopher, SIGNAL(sendRequest(const Request&)), &waiter, SLOT(receiveRequest(const Request&)));
-        QObject::connect(philosopher, SIGNAL(releaseResource(const int&)), &waiter, SLOT(resourceReleased(const int&)));
-        QObject::connect(&waiter, SIGNAL(grantPermission(const Permission&)), philosopher, SLOT(permissionGranted(const Permission&)));
-    }
 }
 
 QVector<Philosopher*> PhilosopherList::items() const {
-    return mItems;
+    QVector<Philosopher*> result;
+    for(auto& element : mItems)
+        result.append(element.get());
+    return result;
 }
 
 void PhilosopherList::start() {
@@ -29,19 +27,18 @@ void PhilosopherList::start() {
 
 void PhilosopherList::appendItem() {
     emit preItemAppended();
-    auto philosopher = new Philosopher({mItems.size(), 0});
-    mItems.back()->modifyNeededResources({mItems.size() - 1, mItems.size()});
-    mItems.append(philosopher);
-    waiter.registerResource(mItems.size());
-    QObject::connect(philosopher, SIGNAL(sendRequest(const Request&)), &waiter, SLOT(receiveRequest(const Request&)));
-    QObject::connect(philosopher, SIGNAL(releaseResource(const int&)), &waiter, SLOT(resourceReleased(const int&)));
-    QObject::connect(&waiter, SIGNAL(grantPermission(const Permission&)), philosopher, SLOT(permissionGranted(const Permission&)));
+    mItems.back()->modifyNeededResources({static_cast<int>(mItems.size() - 1), static_cast<int>(mItems.size())});
+    waiter.registerResource(static_cast<int>(mItems.size()));
+    auto philosopher = std::make_unique<Philosopher>(std::vector<int>({static_cast<int>(mItems.size()), 0}), &waiter);
     philosopher->start();
+    mItems.push_back(std::move(philosopher));
     emit postItemAppended();
 }
 
-void PhilosopherList::removeItem(const int index) {
-    emit preItemRemoved(index);
-    mItems.removeAt(index);
+void PhilosopherList::removeItem() {
+    emit preItemRemoved(mItems.size() - 1);
+    //unregisterResource TODO::: check if this is needed (registration)
+    mItems.erase(mItems.begin() + mItems.size() - 1);
+    mItems.back()->modifyNeededResources({static_cast<int>(mItems.size() - 1), 0});
     emit postItemRemoved();
 }

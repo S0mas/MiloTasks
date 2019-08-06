@@ -1,4 +1,4 @@
-QT += quick concurrent
+QT += quick
 
 QMAKE_CXXFLAGS += /std:c++latest
 
@@ -17,7 +17,8 @@ SOURCES += \
         main.cpp \
     philosophersmodel.cpp \
     waiter.cpp \
-    philosopherlist.cpp
+    philosopherlist.cpp \
+    philosopher.cpp
 
 RESOURCES += qml.qrc
 

@@ -10,11 +10,15 @@ Window {
     height: 480
     title: qsTr("Hello World")
         Philosophers {
+            id: philos
             width: parent.width
             height: 300
             anchors.centerIn: parent
         }
-
+        Column {
+            width: parent.width
+            height: 60
+            anchors.top : philos.bottom
         Button {
             width:parent.width
             height: 30
@@ -22,5 +26,15 @@ Window {
             onClicked: {
                 philosopherList.appendItem()
             }
+        }
+
+        Button {
+            width:parent.width
+            height: 30
+            text: "remove"
+            onClicked: {
+                philosopherList.removeItem()
+            }
+        }
         }
 }

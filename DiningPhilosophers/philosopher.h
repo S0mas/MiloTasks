@@ -14,6 +14,7 @@
 #include <QRandomGenerator>
 #include <QCoreApplication>
 
+class Waiter;
 class Philosopher : public QThread {
     Q_OBJECT
     inline static int idCounter = 1;
@@ -24,13 +25,17 @@ class Philosopher : public QThread {
     std::vector<int> neededResourceIds;
     std::vector<int> handledResourcesIds;
 
+    void releaseResources() noexcept {
+        for(auto const& id : handledResourcesIds)
+            emit releaseResource(id);
+        handledResourcesIds.clear();
+    }
+
     void eat() noexcept {
         eats = true;
         emit eatingChanged();
         std::this_thread::sleep_for(std::chrono::seconds(QRandomGenerator::global()->generate()%3 + 1));
-        for(auto const& id : handledResourcesIds)
-            emit releaseResource(id);
-        handledResourcesIds.clear();
+        releaseResources();
         eats = false;
         emit eatingChanged();
         canEat = false;
@@ -42,16 +47,24 @@ class Philosopher : public QThread {
 public:
     Q_PROPERTY(bool eating MEMBER eats NOTIFY eatingChanged)
     Q_PROPERTY(int index MEMBER id NOTIFY indexChanged)
-    Philosopher(): id(idCounter++){}
-    Philosopher(const std::vector<int>& neededResourceIds) : id(idCounter++), neededResourceIds(neededResourceIds) {
-        qDebug() << "Philosopher created with id" << id << " needed reasourcesIds: " << neededResourceIds[0] << " " << neededResourceIds[1];
+    Philosopher(const std::vector<int>& neededResourceIds, Waiter* waiter);
+    ~Philosopher() override {
+        releaseResources();
+        disconnect(this);
+        quit();
+        #if QT_VERSION >= QT_VERSION_CHECK(5,2,0)
+        requestInterruption();
+        #endif
+        qDebug() << "ddd";
+        wait();
     }
 
     void modifyNeededResources(const std::vector<int>& resourceIds) noexcept {
         neededResourceIds = resourceIds;
+        qDebug() << "Resources changed to" << neededResourceIds[0] << neededResourceIds[1];
     }
 
-    void run() {
+    void run() override {
         while(true){
             if(canEat)
                 eat();

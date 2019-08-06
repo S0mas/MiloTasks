@@ -1,6 +1,8 @@
 #pragma once
 #include "philosopher.h"
 #include "waiter.h"
+#include <memory>
+#include <vector>
 #include <QObject>
 
 class PhilosopherList : public QObject
@@ -20,9 +22,9 @@ signals:
 
 public slots:
     Q_INVOKABLE void appendItem();
-    void removeItem(const int index);
+    void removeItem();
 private:
-    QVector<Philosopher*> mItems;
+    std::vector<std::unique_ptr<Philosopher>> mItems;
 };
 
 
