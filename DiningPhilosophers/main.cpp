@@ -2,21 +2,23 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include "philosophersmodel.h"
-#include "philosopherslist.h"
 #include <vector>
 #include <iostream>
+#include <QDebug>
+#include "waiter.h"
 
 int main(int argc, char *argv[]) {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     QGuiApplication app(argc, argv);
 
-    qmlRegisterType<PhilosophersModel>("Philosophers.model", 1, 0, "PhilosophersModel");
-    qmlRegisterUncreatableType<PhilosophersList>("Philosopher", 1, 0, "List", QStringLiteral("PhilosophersList should not be created in QML"));
-    PhilosophersList philosophersList;
+    qRegisterMetaType<Request>();
+    qmlRegisterType<PhilosophersModel>();
+    qmlRegisterType<Philosopher>();
 
+    PhilosophersModel model;
     QQmlApplicationEngine engine;
-    engine.rootContext()->setContextProperty(QStringLiteral("philosophersList"), &philosophersList);
+    engine.rootContext()->setContextProperty("modelFull", &model);
 
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
@@ -26,7 +28,6 @@ int main(int argc, char *argv[]) {
     }, Qt::QueuedConnection);
     engine.load(url);
 
-    //for(auto& philosopher : philosophers)
-    //    philosopher.start();
+    model.start();
     return app.exec();
 }

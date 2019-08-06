@@ -1,90 +1,70 @@
 #pragma once
+#include "request.h"
+
 #include <utility>
 #include <queue>
 #include <memory>
-#include "forkhandler.h"
+
 #include <thread>
 #include <chrono>
 #include <QThread>
 #include <QDebug>
 #include <QObject>
+#include <QRandomGenerator>
+#include <QCoreApplication>
 
 class Philosopher : public QThread {
     Q_OBJECT
-    inline static unsigned idCounter;
-    std::vector<ForkHandler*> forkHandlers;
-    bool eating = false;
-public:
-    const unsigned id;
-    Philosopher() : id(idCounter++) {
-        forkHandlers.push_back(new ForkHandler());
-        forkHandlers.push_back(new ForkHandler());
-    }
+    inline static int idCounter;
+    int id;
+    bool requestSended = false;
+    bool eats = false;
+    bool canEat = false;
+    std::vector<int> neededResourceIds;
 
-    void sendRequests() {
-        for(auto& forkHandler : forkHandlers){
-            if(forkHandler->isEmpty())
-                forkHandler->sendRequest();
-        }
-    }
-
-    void handleRequests() {
-        for(auto& forkHandler : forkHandlers){
-            if(forkHandler->isAvailable() && forkHandler->getFork()->isDirty())
-                forkHandler->handleRequest();
-        }
-    }
-
-    void eat() {
-        emit startEating();
-        std::this_thread::sleep_for(std::chrono::seconds(2));
-        for(auto& forkHandler : forkHandlers)
-           forkHandler->getFork()->use();
-        emit stopEating();
+    void eat() noexcept {
+        eats = true;
+        emit eatingChanged();
+        std::this_thread::sleep_for(std::chrono::seconds(QRandomGenerator::global()->generate()%5 + 1));
+        for(auto const& id : neededResourceIds)
+            emit releaseResource(id);
+        eats = false;
+        emit eatingChanged();
+        canEat = false;
     }
 
     void think() {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(QRandomGenerator::global()->generate()%100+200));
     }
+public:
+    Q_PROPERTY(bool eating MEMBER eats NOTIFY eatingChanged)
+    Q_PROPERTY(int index MEMBER id NOTIFY indexChanged)
 
-    void proceed() {
-        bool canEat = true;
-        for(auto& forkHandler : forkHandlers){
-            if(!forkHandler->isAvailable() || forkHandler->getFork()->isDirty()){
-                canEat = false;
-                break;
+    Philosopher(const std::vector<int>& neededResourceIds) : id(idCounter++), neededResourceIds(neededResourceIds) {}
+
+    void run() {
+        while(true){
+            if(canEat)
+                eat();
+            if(!requestSended){
+                requestSended = true;
+                emit sendRequest(Request(id, neededResourceIds));
             }
+            think();
+            QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 100);
         }
-        if(canEat)
-            eat();
-        else {
-           sendRequests();
-           think();
-           handleRequests();
-        }
-    }
-
-    void giveForks(Fork* left, Fork* right) noexcept {
-        forkHandlers[0]->receiveFork(left);
-        forkHandlers[1]->receiveFork(right);
-    }
-
-    void connectForkHandlers(Philosopher* onTheLeft, Philosopher* onTheRight) const noexcept {
-        forkHandlers[0]->connectForkHandler(onTheLeft->forkHandlers[1]);
-        forkHandlers[1]->connectForkHandler(onTheRight->forkHandlers[0]);
-    }
-
-    bool isEating() const noexcept {
-        return eating;
-    }
-
-    void run() override {
-        qDebug() << "STARTED... id:" << id;
-        while(true)
-            proceed();
     }
 
 signals:
-    void startEating();
-    void stopEating();
+    void eatingChanged();
+    void indexChanged();
+    void sendRequest(const Request& request);
+    void releaseResource(const int& id) const;
+public slots:
+    void permissionGranted(const int& sender) noexcept {
+        if(sender == id) {
+            requestSended = false;
+            canEat = true;
+        }
+    }
 };

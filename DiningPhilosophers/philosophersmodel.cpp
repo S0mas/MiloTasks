@@ -1,58 +1,30 @@
 #include "philosophersmodel.h"
-#include "philosopherslist.h"
 
-PhilosophersModel::PhilosophersModel(QObject *parent)
-    : QAbstractListModel(parent), mList(nullptr)
+
+QQmlListProperty<Philosopher> PhilosophersModel::list() {
+    return QQmlListProperty<Philosopher>(this, this,
+                                         &PhilosophersModel::append,
+                                         &PhilosophersModel::count,
+                                         &PhilosophersModel::philosopher,
+                                         &PhilosophersModel::clear);
+}
+
+void PhilosophersModel::append(Philosopher *)
 {
+
 }
 
-int PhilosophersModel::rowCount(const QModelIndex &parent) const
+int PhilosophersModel::count() const
 {
-    if (!parent.isValid() || !mList)
-        return 0;
 
-    return mList->items().size();
 }
 
-
-QVariant PhilosophersModel::data(const QModelIndex &index, int role) const
+Philosopher *PhilosophersModel::philosopher(int) const
 {
-    if (!index.isValid() || !mList)
-        return QVariant();
 
-    switch(role) {
-        case EatingRole:
-            return QVariant(mList->items()[index.row()]->isEating());
-        case IdRole:
-            return QVariant(mList->items()[index.row()]->id);
-    }
-
-    return QVariant();
 }
 
-QHash<int, QByteArray> PhilosophersModel::roleNames() const {
-    QHash<int, QByteArray> names;
-    names[EatingRole] = "isEating";
-    names[IdRole] = "id";
-    return names;
-}
+void PhilosophersModel::clear()
+{
 
-PhilosophersList* PhilosophersModel::list() const {
-    return mList;
-}
-
-void PhilosophersModel::setList(PhilosophersList* newList) {
-    beginResetModel();
-    if(mList)
-        mList->disconnect(this);
-    mList = newList;
-    if(mList) {
-        connect(mList, &PhilosophersList::philosopherRemoved, this, [=]() {
-            endInsertRows();
-        });
-        connect(mList, &PhilosophersList::philosopherAdded, this, [=]() {
-            endRemoveRows();
-        });
-    }
-    endResetModel();
 }

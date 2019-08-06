@@ -1,4 +1,4 @@
-QT += quick
+QT += quick concurrent
 
 QMAKE_CXXFLAGS += /std:c++latest
 
@@ -16,7 +16,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
     philosophersmodel.cpp \
-    philosopherslist.cpp
+    waiter.cpp
 
 RESOURCES += qml.qrc
 
@@ -32,10 +32,9 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    fork.h \
-    forkhandler.h \
     philosopher.h \
-    philosopherslist.h \
-    philosophersmodel.h
+    philosophersmodel.h \
+    request.h \
+    waiter.h
 
 DISTFILES +=
