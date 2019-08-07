@@ -16,7 +16,7 @@ import Philosophers 1.0
             Text {
                 anchors.centerIn: parent
                 font.pointSize: 20
-                text: model.display.eating
+                text: model.display.eating ? "Eating" : "Thinking"
             }
 
             onClicked: {

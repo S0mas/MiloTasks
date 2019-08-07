@@ -39,6 +39,6 @@ public slots:
 
     //Thread Safe functions
     bool isEating() const noexcept;
-    bool getId() const noexcept;
+    int getId() const noexcept;
     std::vector<int> getNeededResources();
 };

@@ -7,7 +7,7 @@
 class PhilosopherItem : public QObject {
     Q_OBJECT
     Q_PROPERTY(bool eating READ isEating NOTIFY eatingChanged)
-    Q_PROPERTY(int index READ getId)
+    Q_PROPERTY(int index READ getId NOTIFY indexChange)
     std::unique_ptr<Philosopher> philosopher;
     std::unique_ptr<QThread> thread;
 public:
@@ -19,6 +19,7 @@ public:
     void start() const;
 signals:
     void eatingChanged();
+    void indexChange();
     void modifyNeededResources(const std::vector<int>& resourcesIds);
 public slots:
     void eatingWasChanged();

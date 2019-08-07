@@ -8,23 +8,50 @@ Window {
     width: 640
     height: 480
     title: qsTr("Hello World")
-        Philosophers {
-            id: philos
-            width: parent.width
-            height: 300
-            anchors.centerIn: parent
+    PathView {
+        width: 400
+        height: 400
+        anchors.centerIn: parent
+        model: PhilosophersModel {
+            id: philosophersModelId
+            list: philosopherList
         }
-        Column {
-            width: parent.width
-            height: 60
-            anchors.top : philos.bottom
-        Button {
-            width:parent.width
-            height: 30
-            text: "add"
+
+        delegate: RoundButton {
+            width: 40
+            height: 40
+            radius: 20
+            background: Rectangle {
+                        color: model.display.eating ? "yellow" : "brown"
+                    }
+            Text {
+                anchors.centerIn: parent
+                font.pointSize: 20
+                text: model.display.index
+                transform: [
+                    Translate {y: -30}
+                ]
+            }
             onClicked: {
-                philosopherList.appendItem()
+                philosopherList.removeItem(index);
             }
         }
+        path: Path {
+            id: myPath
+            startX: 0; startY: 0
+            PathSvg { path: "M 200 200 m -200 0 a 200 200 0 1 0 400 0 a 200 200 0 1 0 -400 0" }
+        }
+
+        Component.onCompleted: {
+            philosopherList.start()
+        }
+    }
+    Button {
+        width: parent
+        height: 20
+        onClicked: {
+            philosopherList.appendItem();
+        }
+        text:"add philosopher"
     }
 }

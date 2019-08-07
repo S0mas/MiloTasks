@@ -72,7 +72,7 @@ bool Philosopher::isEating() const noexcept {
     return eating;
 }
 
-bool Philosopher::getId() const noexcept {
+int Philosopher::getId() const noexcept {
     return id;
 }
 
