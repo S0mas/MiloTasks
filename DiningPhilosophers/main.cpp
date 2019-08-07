@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include "philosophersmodel.h"
+#include "philosopheritem.h"
 #include <vector>
 #include <iostream>
 #include <QDebug>
@@ -15,9 +16,11 @@ int main(int argc, char *argv[]) {
 
     qRegisterMetaType<Request>();
     qRegisterMetaType<Permission>();
+
     qmlRegisterType<Philosopher>();
+    qmlRegisterType<PhilosopherItem>();
+    qmlRegisterType<PhilosopherList>();
     qmlRegisterType<PhilosophersModel>("Philosophers", 1, 0, "PhilosophersModel");
-    qmlRegisterType<PhilosopherList>("Philosophers", 1, 0, "PhilosopherList");
 
     QQmlApplicationEngine engine;
     PhilosopherList philosopherList;

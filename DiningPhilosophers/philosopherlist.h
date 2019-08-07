@@ -1,18 +1,21 @@
 #pragma once
-#include "philosopher.h"
+#include "philosopheritem.h"
 #include "waiter.h"
 #include <memory>
 #include <vector>
 #include <QObject>
+#include <QThread>
 
 class PhilosopherList : public QObject
 {
     Q_OBJECT
     Waiter waiter;
+    std::unique_ptr<QThread> waiterThread;
+    int PhilosopherList::getNextIndex(const int index) const noexcept;
 public:
     explicit PhilosopherList(QObject *parent = nullptr);
 
-    QVector<Philosopher*> items() const;
+    QVector<PhilosopherItem*> items() const;
     Q_INVOKABLE void start();
 signals:
     void preItemAppended();
@@ -22,9 +25,9 @@ signals:
 
 public slots:
     Q_INVOKABLE void appendItem();
-    void removeItem();
+    Q_INVOKABLE void removeItem(const int index);
 private:
-    std::vector<std::unique_ptr<Philosopher>> mItems;
+    std::vector<std::unique_ptr<PhilosopherItem>> mItems;
 };
 
 

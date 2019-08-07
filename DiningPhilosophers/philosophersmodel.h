@@ -3,7 +3,6 @@
 #include <QDebug>
 #include <QAbstractListModel>
 
-//Q_DECLARE_METATYPE(Philosopher*)
 class PhilosophersModel : public QAbstractListModel
 {
     Q_OBJECT

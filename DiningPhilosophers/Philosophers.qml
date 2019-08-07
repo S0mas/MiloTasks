@@ -10,15 +10,20 @@ import Philosophers 1.0
             list: philosopherList
         }
 
-        delegate: Rectangle {
+        delegate: RoundButton {
             width: parent.width
             height: 30
-            color: "green"
             Text {
                 anchors.centerIn: parent
                 font.pointSize: 20
                 text: model.display.eating
             }
+
+            onClicked: {
+                philosopherList.removeItem(index);
+            }
+
+
         }
 
         Component.onCompleted: {

@@ -15,6 +15,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
+    philosopheritem.cpp \
     philosophersmodel.cpp \
     waiter.cpp \
     philosopherlist.cpp \
@@ -35,6 +36,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     philosopher.h \
+    philosopheritem.h \
     philosophersmodel.h \
     request.h \
     waiter.h \

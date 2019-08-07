@@ -6,21 +6,23 @@
 #include <queue>
 #include <memory>
 
+#include <atomic>
+#include <QMutexLocker>
 #include <thread>
 #include <chrono>
-#include <QThread>
 #include <QDebug>
-#include <QObject>
+#include <QThread>
 #include <QRandomGenerator>
 #include <QCoreApplication>
 
 class Waiter;
-class Philosopher : public QThread {
+class Philosopher : public QObject {
     Q_OBJECT
+    QMutex mutex;
     inline static int idCounter = 1;
-    int id;
+    const int id;
     bool requestSended = false;
-    bool eats = false;
+    std::atomic<bool> eating = false;
     bool canEat = false;
     std::vector<int> neededResourceIds;
     std::vector<int> handledResourcesIds;
@@ -32,11 +34,11 @@ class Philosopher : public QThread {
     }
 
     void eat() noexcept {
-        eats = true;
+        eating = true;
         emit eatingChanged();
         std::this_thread::sleep_for(std::chrono::seconds(QRandomGenerator::global()->generate()%3 + 1));
         releaseResources();
-        eats = false;
+        eating = false;
         emit eatingChanged();
         canEat = false;
     }
@@ -45,41 +47,13 @@ class Philosopher : public QThread {
         std::this_thread::sleep_for(std::chrono::milliseconds(QRandomGenerator::global()->generate()%100+200));
     }
 public:
-    Q_PROPERTY(bool eating MEMBER eats NOTIFY eatingChanged)
-    Q_PROPERTY(int index MEMBER id NOTIFY indexChanged)
     Philosopher(const std::vector<int>& neededResourceIds, Waiter* waiter);
     ~Philosopher() override {
         releaseResources();
         disconnect(this);
-        quit();
-        #if QT_VERSION >= QT_VERSION_CHECK(5,2,0)
-        requestInterruption();
-        #endif
-        qDebug() << "ddd";
-        wait();
     }
-
-    void modifyNeededResources(const std::vector<int>& resourceIds) noexcept {
-        neededResourceIds = resourceIds;
-        qDebug() << "Resources changed to" << neededResourceIds[0] << neededResourceIds[1];
-    }
-
-    void run() override {
-        while(true){
-            if(canEat)
-                eat();
-            if(!requestSended){
-                requestSended = true;
-                emit sendRequest(Request(id, neededResourceIds));
-            }
-            think();
-            QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 100);
-        }
-    }
-
 signals:
     void eatingChanged();
-    void indexChanged();
     void sendRequest(const Request& request);
     void releaseResource(const int& id) const;
 public slots:
@@ -90,4 +64,38 @@ public slots:
             canEat = true;
         }
     }
+
+    void neededResourcesModified(const std::vector<int>& resourceIds) noexcept {
+        neededResourceIds = resourceIds;
+    }
+
+    void start() {
+        while(!QThread::currentThread()->isInterruptionRequested()){
+            if(canEat)
+                eat();
+            if(!requestSended){
+                requestSended = true;
+                //QMutexLocker locker(&mutex);
+                emit sendRequest(Request(id, neededResourceIds));
+            }
+            think();
+            QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 100);
+        }
+    }
+
+    //Thread Safe functions
+    bool isEating() const noexcept {
+        return eating;
+    }
+
+    bool getId() const noexcept {
+        return id;
+    }
+
+    void modifyNeededResources(const std::vector<int>& resourceIds) noexcept {
+        //QMutexLocker locker(&mutex);
+        neededResourceIds = resourceIds;
+    }
 };
+
+

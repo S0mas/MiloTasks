@@ -11,20 +11,20 @@ void PhilosophersModel::setList(PhilosopherList *list) {
     philosopherList = list;
 
     if(philosopherList){
-        connect(philosopherList, &PhilosopherList::preItemAppended, this, [=]() {
+        connect(philosopherList, &PhilosopherList::preItemAppended, this, [this]() {
             const auto index = philosopherList->items().size();
             beginInsertRows(QModelIndex(), index, index);
         });
 
-        connect(philosopherList, &PhilosopherList::postItemAppended, this, [=]() {
+        connect(philosopherList, &PhilosopherList::postItemAppended, this, [this]() {
             endInsertRows();
         });
 
-        connect(philosopherList, &PhilosopherList::preItemRemoved, this, [=](int index) {
+        connect(philosopherList, &PhilosopherList::preItemRemoved, this, [this](int index) {
             beginRemoveRows(QModelIndex(), index, index);
         });
 
-        connect(philosopherList, &PhilosopherList::postItemRemoved, this, [=]() {
+        connect(philosopherList, &PhilosopherList::postItemRemoved, this, [this]() {
             endRemoveRows();
         });
     }

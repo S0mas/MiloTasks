@@ -3,20 +3,22 @@
 #include "request.h"
 #include <list>
 #include <map>
-#include <QThread>
+#include <QObject>
 #include <QDebug>
 #include <QCoreApplication>
 
-class Waiter : public QThread {
+class Waiter : public QObject {
     Q_OBJECT
+
     enum RessourceState {
         FREE,
         BLOCKED,
     };
-
+    using OwnerId = int;//0 means it is not reserved;
+    using ResourceId = int;//0 means it is not reserved;
     std::list<Request> requests;
-    std::map<int, int> resourcesReservation;
-    std::map<int, bool> resourceStates;
+    std::map<ResourceId, OwnerId> resourcesReservation;
+    std::map<ResourceId, RessourceState> resourceStates;
 
     bool isReservationPossible(const Request& request) noexcept {
         for(auto const& id : request.resourceIds)
@@ -32,7 +34,7 @@ class Waiter : public QThread {
         return false;
     }
 
-    void removeReservation(const std::vector<int>& resourceIds) noexcept {
+    void removeReservation(const std::vector<ResourceId>& resourceIds) noexcept {
         for(auto const& id : resourceIds)
             resourcesReservation[id] = 0;
     }
@@ -62,7 +64,7 @@ class Waiter : public QThread {
         return false;
     }
 
-    void markResourcesBlocked(const std::vector<int>& resourceIds) noexcept {
+    void markResourcesBlocked(const std::vector<ResourceId>& resourceIds) noexcept {
         for(auto const& id : resourceIds)
             resourceStates[id] = BLOCKED;
     }
@@ -93,21 +95,6 @@ class Waiter : public QThread {
     }
 public:
     Waiter(){}
-
-    void run() override {
-        while(true){
-            handleRequests();
-            QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 100);
-        }
-    }
-
-    void registerResource(const int id) noexcept {
-        resourceStates[id] = FREE;
-    }
-
-    void registeredResourcesSize(const int id) noexcept {
-        resourceStates[id] = FREE;
-    }
 signals:
     void grantPermission(const Permission& permission);
 
@@ -119,5 +106,12 @@ public slots:
 
     void resourceReleased(const int& resourceId) noexcept {
         releaseResource(resourceId);
+    }
+
+    void start() {
+        while(true){
+            handleRequests();
+            QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 100);
+        }
     }
 };
