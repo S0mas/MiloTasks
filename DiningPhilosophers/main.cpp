@@ -1,13 +1,8 @@
+#include "philosophersmodel.h"
+
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
-#include "philosophersmodel.h"
-#include "philosopheritem.h"
-#include <vector>
-#include <iostream>
-#include <QDebug>
-#include <QQmlComponent>
-#include "waiter.h"
 
 int main(int argc, char *argv[]) {
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
@@ -16,7 +11,6 @@ int main(int argc, char *argv[]) {
 
     qRegisterMetaType<Request>();
     qRegisterMetaType<Permission>();
-
     qmlRegisterType<Philosopher>();
     qmlRegisterType<PhilosopherItem>();
     qmlRegisterType<PhilosopherList>();

@@ -22,8 +22,6 @@ import Philosophers 1.0
             onClicked: {
                 philosopherList.removeItem(index);
             }
-
-
         }
 
         Component.onCompleted: {

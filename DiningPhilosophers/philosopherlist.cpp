@@ -1,15 +1,22 @@
 #include "philosopherlist.h"
 
 PhilosopherList::PhilosopherList(QObject *parent) : QObject(parent) {
-    mItems.push_back(std::make_unique<PhilosopherItem>(std::make_unique<Philosopher>(std::vector<int>({0, 1}), &waiter)));
-    mItems.push_back(std::make_unique<PhilosopherItem>(std::make_unique<Philosopher>(std::vector<int>({1, 2}), &waiter)));
-    mItems.push_back(std::make_unique<PhilosopherItem>(std::make_unique<Philosopher>(std::vector<int>({2, 3}), &waiter)));
-    mItems.push_back(std::make_unique<PhilosopherItem>(std::make_unique<Philosopher>(std::vector<int>({3, 4}), &waiter)));
+    mItems.push_back(std::make_unique<PhilosopherItem>(std::make_unique<Philosopher>(std::vector<int>({Waiter::getNewResource(), Waiter::getNewResource()}), &waiter)));
+    mItems.push_back(std::make_unique<PhilosopherItem>(std::make_unique<Philosopher>(std::vector<int>({1, Waiter::getNewResource()}), &waiter)));
+    mItems.push_back(std::make_unique<PhilosopherItem>(std::make_unique<Philosopher>(std::vector<int>({2, Waiter::getNewResource()}), &waiter)));
+    mItems.push_back(std::make_unique<PhilosopherItem>(std::make_unique<Philosopher>(std::vector<int>({3, Waiter::getNewResource()}), &waiter)));
     mItems.push_back(std::make_unique<PhilosopherItem>(std::make_unique<Philosopher>(std::vector<int>({4, 0}), &waiter)));
 
     waiterThread = std::make_unique<QThread>();
     waiter.moveToThread(waiterThread.get());
     connect(waiterThread.get(), SIGNAL(started()), &waiter, SLOT(start()));
+}
+
+PhilosopherList::~PhilosopherList() {
+    disconnect(this);
+    waiterThread->requestInterruption();
+    waiterThread->quit();
+    waiterThread->wait();
 }
 
 QVector<PhilosopherItem*> PhilosopherList::items() const {
@@ -26,10 +33,27 @@ void PhilosopherList::start() {
 
 }
 
+static int getCommonResource(const std::vector<int>& lhs, const std::vector<int>& rhs){
+    int common = -1;
+    for(auto const& resourceId : lhs)
+            for(auto const& resourceId2 : rhs)
+                if(resourceId == resourceId2)
+                    common = resourceId;
+    return common;
+}
+
 void PhilosopherList::appendItem() {
     emit preItemAppended();
-    emit mItems.back()->modifyNeededResources({static_cast<int>(mItems.size() - 1), static_cast<int>(mItems.size())});
-    mItems.push_back(std::make_unique<PhilosopherItem>(std::make_unique<Philosopher>(std::vector<int>({static_cast<int>(mItems.size()), 0}), &waiter)));
+    auto first = mItems[0]->getNeededResources();
+    auto last = mItems.back()->getNeededResources();
+    int commonResource = getCommonResource(first, last);
+    int newResourceId = Waiter::getNewResource();
+    std::vector<int> resourcesOfNewPhilosopher {commonResource, newResourceId};
+    for(auto& resourceId : last)
+        if(resourceId == commonResource)
+            resourceId = newResourceId;
+    emit mItems.back()->modifyNeededResources(last);
+    mItems.push_back(std::make_unique<PhilosopherItem>(std::make_unique<Philosopher>(resourcesOfNewPhilosopher, &waiter)));
     mItems.back()->start();
     emit postItemAppended();
 }
@@ -38,10 +62,27 @@ int PhilosopherList::getNextIndex(const int index) const noexcept {
     return (index+1)%mItems.size();
 }
 
+int PhilosopherList::getPrevIndex(const int index) const noexcept {
+    return index == 0 ? mItems.size() - 1 : index - 1;
+}
+
+static std::vector<int> getModifiedResources(const std::vector<int>& lhs, const std::vector<int>& rhs) {
+    std::vector<int> modifedResources;
+    int resourceIdToIgnore = getCommonResource(lhs, rhs);
+    for(auto const& resourceId : lhs)
+        if(resourceId != resourceIdToIgnore)
+            modifedResources.push_back(resourceId);
+    for(auto const& resourceId : rhs)
+        if(resourceId != resourceIdToIgnore)
+            modifedResources.push_back(resourceId);
+    return modifedResources;
+}
+
 void PhilosopherList::removeItem(const int index) {
     emit preItemRemoved(index);
-    //emit mItems.at(getNextIndex(index))->modifyNeededResources({mItems.size-});
-    //mItems.erase(mItems.begin() + index);
-    //mItems.back()->modifyNeededResources({static_cast<int>(mItems.size() - 1), 0});
+    auto lhs = mItems.at(index)->getNeededResources();
+    auto rhs = mItems.at(getNextIndex(index))->getNeededResources();
+    emit mItems.at(getNextIndex(index))->modifyNeededResources(getModifiedResources(lhs,rhs));
+    mItems.erase(mItems.begin() + index);
     emit postItemRemoved();
 }

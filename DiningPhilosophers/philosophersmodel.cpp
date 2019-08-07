@@ -1,5 +1,7 @@
 #include "philosophersmodel.h"
 
+PhilosophersModel::PhilosophersModel() : philosopherList(nullptr){}
+
 PhilosopherList *PhilosophersModel::list() const {
     return philosopherList;
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+
 #include <QMetaType>
 
 struct Permission {
