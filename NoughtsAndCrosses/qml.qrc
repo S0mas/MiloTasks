@@ -1,5 +1,11 @@
 <RCC>
     <qresource prefix="/">
         <file>main.qml</file>
+        <file>BoardSquare.qml</file>
+        <file>Board.qml</file>
+        <file>ScoreRow.qml</file>
+        <file>MenuButtons.qml</file>
+        <file>CanvasItem.qml</file>
+        <file>NoughtAndCrosses.qml</file>
     </qresource>
 </RCC>

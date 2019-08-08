@@ -1,11 +1,12 @@
 #pragma once
 #include "myarray.h"
 #include "typedefs.h"
+
 #include <optional>
-#include <array>
 #include <stack>
-#include <QObject>
 #include <vector>
+
+#include <QObject>
 
 class GameEngine : public QObject {
     Q_OBJECT
@@ -39,15 +40,16 @@ class GameEngine : public QObject {
 public:
     explicit GameEngine(QObject *parent = nullptr);
 signals:
-    void gameEnded(const unsigned player, const unsigned startIndex, const unsigned stopIndex);
+    void gameEnded(const unsigned player, const std::vector<int>& squares);
     void playerChanged(const unsigned player);
     void badMove();
     void updateSquare(const unsigned index, const unsigned player);
     void toggleAiSig(const bool isOn, const unsigned player);
 public slots:
-    Q_INVOKABLE void newGame();
-    Q_INVOKABLE void move(const unsigned index, const unsigned sign);
-    Q_INVOKABLE void reset();
-    Q_INVOKABLE void undo();
-    Q_INVOKABLE void toggleAi(const unsigned player);
+    void newGame();
+    void move(const unsigned index, const unsigned sign);
+    void reset();
+    void undo();
+    void toggleAi(const unsigned player);
+    void process();
 };

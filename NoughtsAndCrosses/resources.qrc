@@ -2,5 +2,10 @@
     <qresource prefix="/">
         <file>images/cross.png</file>
         <file>images/circle.png</file>
+        <file>sounds/badMove.wav</file>
+        <file>sounds/clickMenuButton.wav</file>
+        <file>sounds/draw.wav</file>
+        <file>sounds/goodMove.wav</file>
+        <file>sounds/win.wav</file>
     </qresource>
 </RCC>

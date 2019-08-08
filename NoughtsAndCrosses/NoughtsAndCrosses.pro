@@ -13,6 +13,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         gameengine.cpp \
+        gameengineif.cpp \
         main.cpp
 
 RESOURCES += qml.qrc \
@@ -31,5 +32,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 
 HEADERS += \
     gameengine.h \
+    gameengineif.h \
     myarray.h \
     typedefs.h

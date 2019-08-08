@@ -1,8 +1,11 @@
 #include "gameengine.h"
-#include <QCoreApplication>
-#include <QtGlobal>
-#include <thread>
+
 #include <chrono>
+#include <thread>
+
+#include <QCoreApplication>
+#include <QRandomGenerator>
+#include <QThread>
 
 static MyEnums::PlayerType mapUnsignedToSignType(const unsigned player) {
     switch (player) {
@@ -14,7 +17,6 @@ static MyEnums::PlayerType mapUnsignedToSignType(const unsigned player) {
         return MyEnums::PlayerType::Empty;
     }
 }
-
 
 static unsigned mapSignTypeToUnsigned(const MyEnums::PlayerType player) {
     switch (player) {
@@ -43,13 +45,16 @@ void GameEngine::swapActivePlayer() noexcept {
 void GameEngine::checkGameStatus() noexcept {
     for(auto const& element : columnsRowsOrDiagonals)
         if(board[element[0]].sign == activePlayer && board[element[1]].sign == activePlayer && board[element[2]].sign == activePlayer){
-            emit gameEnded(mapSignTypeToUnsigned(activePlayer), element[0], element.back());
+            std::vector<int> squares;
+            for(auto const& square : element)
+                squares.push_back(square);
+            emit gameEnded(mapSignTypeToUnsigned(activePlayer), squares);
             gameInProgress = false;
             return;
         }
     //draw
     if(isBoardFull()){
-        emit gameEnded(mapSignTypeToUnsigned(MyEnums::PlayerType::Empty), 0, 0);
+        emit gameEnded(mapSignTypeToUnsigned(MyEnums::PlayerType::Empty), {});
         gameInProgress = false;
     }
 }
@@ -57,7 +62,6 @@ void GameEngine::checkGameStatus() noexcept {
 GameEngine::GameEngine(QObject *parent) : QObject(parent), activePlayer(MyEnums::PlayerType::Cross) {}
 
 void GameEngine::newGame() {
-   QCoreApplication::processEvents();
    gameInProgress = true;
    reset();
    swapActivePlayer();
@@ -66,7 +70,6 @@ void GameEngine::newGame() {
 }
 
 void GameEngine::move(const unsigned index, const unsigned sign) {
-    QCoreApplication::processEvents();
     if(gameInProgress) {
         auto signType = mapUnsignedToSignType(sign);
         if(signType == activePlayer && board[index].sign == MyEnums::PlayerType::Empty){
@@ -76,7 +79,7 @@ void GameEngine::move(const unsigned index, const unsigned sign) {
             checkGameStatus();
             swapActivePlayer();
             if(aiStatus[activePlayer] && gameInProgress){
-                std::this_thread::sleep_for(std::chrono::milliseconds(250));
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
                 moveAI();
             }
         }
@@ -86,13 +89,11 @@ void GameEngine::move(const unsigned index, const unsigned sign) {
 }
 
 void GameEngine::reset() {
-    QCoreApplication::processEvents();
     while(!moves.empty() && gameInProgress)
         undo();
 }
 
 void GameEngine::undo() {
-    QCoreApplication::processEvents();
     if(!moves.empty() && gameInProgress){
         const auto index = moves.top();
         board[index].sign = MyEnums::PlayerType::Empty;
@@ -103,7 +104,6 @@ void GameEngine::undo() {
 }
 
 void GameEngine::toggleAi(const unsigned sign) {
-    QCoreApplication::processEvents();
     aiStatus[mapUnsignedToSignType(sign)] = !aiStatus[mapUnsignedToSignType(sign)];
     emit toggleAiSig(aiStatus[mapUnsignedToSignType(sign)], sign);
     if(aiStatus[activePlayer])
@@ -129,7 +129,7 @@ std::optional<unsigned> GameEngine::findWinningMove(const MyEnums::PlayerType pl
     }
     if(candidates.empty())
         return {};
-    return candidates[qrand()%candidates.size()];
+    return candidates[QRandomGenerator::global()->generate()%candidates.size()];
 }
 
 unsigned GameEngine::findBestMove() const noexcept {
@@ -158,12 +158,13 @@ unsigned GameEngine::findBestMove() const noexcept {
         }
     }
     if(!bestMoves.empty())
-        return bestMoves[qrand()%bestMoves.size()];
+        return bestMoves[QRandomGenerator::global()->generate()%bestMoves.size()];
     else
         return 0;
 }
 
 void GameEngine::moveAI() noexcept {
+    QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 100);
     if(auto position = findWinningMove(activePlayer))
         move(*position, mapSignTypeToUnsigned(activePlayer));
     else if(auto position = findWinningMove(getOpositPlayer(activePlayer)))
@@ -172,3 +173,7 @@ void GameEngine::moveAI() noexcept {
         move(findBestMove(), mapSignTypeToUnsigned(activePlayer));
 }
 
+void GameEngine::process() {
+    if(!QThread::currentThread()->isInterruptionRequested())
+        QCoreApplication::processEvents(QEventLoop::WaitForMoreEvents, 1000);
+}
