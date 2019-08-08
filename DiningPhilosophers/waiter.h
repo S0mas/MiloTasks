@@ -13,10 +13,10 @@ class Waiter : public QObject {
         FREE,
         BLOCKED,
     };
-    using OwnerId = int;//0 means it is not reserved;
-    using ResourceId = int;//0 means it is not reserved;
+    using OwnerId = int;
+    using ResourceId = int;
     std::list<Request> requests;
-    std::map<ResourceId, OwnerId> resourcesReservation;
+    std::map<ResourceId, OwnerId> resourcesReservation;//0 means it is not reserved;
     std::map<ResourceId, RessourceState> resourceStates;
 
     bool isReservationPossible(const Request& request);

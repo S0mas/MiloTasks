@@ -47,7 +47,7 @@ Window {
         }
     }
     Button {
-        width: parent
+        width: parent.width
         height: 20
         onClicked: {
             philosopherList.appendItem();
