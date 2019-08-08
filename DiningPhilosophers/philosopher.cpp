@@ -9,18 +9,20 @@
 #include <QThread>
 
 void Philosopher::releaseResources() noexcept {
+    QMutexLocker lock(&resourceIdsMutex);
     for(auto const& id : handledResourcesIds)
         emit releaseResource(id);
     handledResourcesIds.clear();
+    handledResourcesChanged();
 }
 
 void Philosopher::eat() {
     eating = true;
     emit eatingChanged();
     std::this_thread::sleep_for(std::chrono::seconds(QRandomGenerator::global()->generate()%3 + 1));
-    releaseResources();
     eating = false;
     emit eatingChanged();
+    releaseResources();
     canEat = false;
 }
 
@@ -38,15 +40,18 @@ Philosopher::Philosopher(const std::vector<int> &neededResourceIds, Waiter *wait
 
 void Philosopher::permissionGranted(const Permission &permission) {
     if(permission.sender == id) {
+        QMutexLocker lock(&resourceIdsMutex);
         handledResourcesIds = permission.resourceIds;
+        handledResourcesChanged();
         requestSended = false;
         canEat = true;
     }
 }
 
 void Philosopher::neededResourcesModified(const std::vector<int> &resourceIds) {
-    QMutexLocker lock(&neededResourceIdsMutex);
+    QMutexLocker lock(&resourceIdsMutex);
     neededResourceIds = resourceIds;
+    emit neededResourcesChanged();
 }
 
 void Philosopher::start() {
@@ -55,7 +60,7 @@ void Philosopher::start() {
             eat();
         if(!requestSended){
             requestSended = true;
-            QMutexLocker lock(&neededResourceIdsMutex);
+            QMutexLocker lock(&resourceIdsMutex);
             emit sendRequest(Request(id, neededResourceIds));
         }
         think();
@@ -77,6 +82,11 @@ int Philosopher::getId() const noexcept {
 }
 
 std::vector<int> Philosopher::getNeededResources() {
-    QMutexLocker lock(&neededResourceIdsMutex);
+    QMutexLocker lock(&resourceIdsMutex);
     return neededResourceIds;
+}
+
+std::vector<int> Philosopher::getHandledResources() {
+    QMutexLocker lock(&resourceIdsMutex);
+    return handledResourcesIds;
 }

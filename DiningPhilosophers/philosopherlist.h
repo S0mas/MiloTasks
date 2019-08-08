@@ -15,7 +15,6 @@ class PhilosopherList : public QObject
     Waiter waiter;
     std::unique_ptr<QThread> waiterThread;
     int getNextIndex(const int index) const noexcept;
-    int getPrevIndex(const int index) const noexcept;
 public:
     explicit PhilosopherList(QObject *parent = nullptr);
     ~PhilosopherList() override;

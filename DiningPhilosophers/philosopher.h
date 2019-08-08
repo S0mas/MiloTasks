@@ -12,7 +12,7 @@ class Philosopher : public QObject {
     Q_OBJECT
     inline static int idCounter = 1;
     const int id;
-    QMutex neededResourceIdsMutex;
+    QMutex resourceIdsMutex;
     std::atomic<bool> eating = false;
     std::vector<int> neededResourceIds;
     std::vector<int> handledResourcesIds;
@@ -27,11 +27,12 @@ public:
     ~Philosopher() override {}
 signals:
     void eatingChanged();
+    void neededResourcesChanged();
+    void handledResourcesChanged();
     void sendRequest(const Request& request);
     void releaseResource(const int id);
     void removeReservations(const int);
     void removeRequest(const int);
-    void neededResources(const int);
 public slots:
     void permissionGranted(const Permission& permission);
     void neededResourcesModified(const std::vector<int>& resourceIds);
@@ -41,4 +42,5 @@ public slots:
     bool isEating() const noexcept;
     int getId() const noexcept;
     std::vector<int> getNeededResources();
+    std::vector<int> getHandledResources();
 };

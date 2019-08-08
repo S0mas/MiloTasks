@@ -71,10 +71,6 @@ int PhilosopherList::getNextIndex(const int index) const noexcept {
     return (index+1)%mItems.size();
 }
 
-int PhilosopherList::getPrevIndex(const int index) const noexcept {
-    return index == 0 ? mItems.size() - 1 : index - 1;
-}
-
 static std::vector<int> getModifiedResources(const std::vector<int>& lhs, const std::vector<int>& rhs) {
     std::vector<int> modifedResources;
     int resourceIdToIgnore = getCommonResource(lhs, rhs);
