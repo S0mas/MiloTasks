@@ -6,7 +6,7 @@ Window {
     visible: true
     width: 480
     height: 640
-    title: qsTr("Hello World")
+    title: qsTr("Morse Code Translator")
 
 
 
@@ -26,7 +26,7 @@ Window {
            width: parent.width
            height: 20
 
-           MyButton {
+           RoundButton {
                id: buttonTranslateToNormal
                width: parent.width/2
                height: parent.height
@@ -36,7 +36,7 @@ Window {
                }
            }
 
-           MyButton {
+           RoundButton {
                id: buttonTranslateToMorse
                width: parent.width/2
                height: parent.height

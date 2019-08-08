@@ -37,7 +37,7 @@ Rectangle {
     Column {
         width:parent.width
         height:parent.height
-        MyButton {
+        RoundButton {
             id: buttonLoadId
             width:parent.width
             height:20
@@ -47,7 +47,7 @@ Rectangle {
             text: "Load from file"
         }
 
-        MyButton {
+        RoundButton {
             id: buttonSaveId
             width:parent.width
             height:20
