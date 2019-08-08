@@ -55,7 +55,7 @@ std::vector<std::string> AnagramDerivationSolver::solve(std::string base) {
     std::vector<std::string> result;
     auto const& longestNodes = tree->findLongest();
     result.reserve(longestNodes.size());
-    for(auto const& node : tree->findLongest())
+    for(auto const& node : longestNodes)
         result.push_back(node->toString());
     return result;
 }

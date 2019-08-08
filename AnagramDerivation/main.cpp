@@ -1,5 +1,4 @@
 #include "anagramderivationsolver.h"
-#include "anagramderivativenode.h"
 #include "logger.h"
 #include <sstream>
 #include <string>
@@ -63,5 +62,6 @@ int main(int argc, char *argv[]) {
         }
         invalidInput();
     }
+
     return 0;
 }

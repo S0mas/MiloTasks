@@ -14,13 +14,16 @@ void AnagramsBase::refill(const std::string &fileName) {
 }
 
 void AnagramsBase::addWord(const std::string& word) {
-    container[AnagramStringHash::cyclicHash(word)].insert(&word);
+    //container[AnagramStringHash::cyclicHash(word)].insert(&word);
+    container2[AnagramStringHash::cyclicHash(word)].insert(&word);
 }
 
 void AnagramsBase::clear() noexcept {
-    container.clear();
+    //container.clear();
+    container2.clear();
 }
 
 AnagramsBase::AnagramsSet& AnagramsBase::getAnagrams(const std::string& word) {
-    return container[AnagramStringHash::cyclicHash(word)];
+    //return container[AnagramStringHash::cyclicHash(word)];
+    return container2[AnagramStringHash::cyclicHash(word)];
 }
