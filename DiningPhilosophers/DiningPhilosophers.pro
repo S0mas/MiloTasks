@@ -1,6 +1,9 @@
 QT += quick
-
+CONFIG += c++1z
+win32-msvc* {
 QMAKE_CXXFLAGS += /std:c++latest
+}
+
 QMAKE_CXXFLAGS += -std=c++17
 
 # The following define makes your compiler emit warnings if you use

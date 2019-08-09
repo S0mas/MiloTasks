@@ -10,10 +10,10 @@
 class Waiter;
 class Philosopher : public QObject {
     Q_OBJECT
-    inline static int idCounter = 1;
+    static int idCounter;
     const int id;
     QMutex resourceIdsMutex;
-    std::atomic<bool> eating = false;
+    std::atomic<bool> eating {false};
     std::vector<int> neededResourceIds;
     std::vector<int> handledResourcesIds;
     bool requestSended = false;

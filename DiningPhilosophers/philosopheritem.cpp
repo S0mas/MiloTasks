@@ -1,4 +1,5 @@
 #include "philosopheritem.h"
+#include <memory>
 
 PhilosopherItem::PhilosopherItem(std::unique_ptr<Philosopher>&& philosopher, QObject *parent) : QObject(parent), philosopher(std::move(philosopher)) {
     connect(this->philosopher.get(), SIGNAL(eatingChanged()), this, SLOT(eatingWasChanged()));

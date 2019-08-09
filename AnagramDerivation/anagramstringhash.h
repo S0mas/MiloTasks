@@ -5,7 +5,7 @@
 #include <string>
 
 class AnagramStringHash {
-    inline static constexpr std::array<uint8_t, 26> primes = { 3, 59, 29, 37, 2, 61, 53, 47, 7, 97,
+    static constexpr std::array<uint8_t, 26> primes = { 3, 59, 29, 37, 2, 61, 53, 47, 7, 97,
                                                            73, 23, 43, 17, 11, 41, 101, 5, 19, 13,
                                                            31, 79, 71, 83, 67, 89};
 public:

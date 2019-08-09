@@ -8,6 +8,8 @@
 #include <QRandomGenerator>
 #include <QThread>
 
+int Philosopher::idCounter = 1;
+
 void Philosopher::releaseResources() noexcept {
     QMutexLocker lock(&resourceIdsMutex);
     for(auto const& id : handledResourcesIds)

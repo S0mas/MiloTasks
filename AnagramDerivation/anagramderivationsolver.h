@@ -1,5 +1,6 @@
 #pragma once
 #include "anagramsbase.h"
+#include <memory>
 #include <set>
 #include <stack>
 #include <string>

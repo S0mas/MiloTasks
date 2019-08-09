@@ -1,6 +1,8 @@
 QT += quick
+win32-msvc* {
 QMAKE_CXXFLAGS += /std:c++latest
-QMAKE_CXXFLAGS += -std=c++17
+}
+QMAKE_CXXFLAGS += -std=gnu++17
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked deprecated (the exact warnings
