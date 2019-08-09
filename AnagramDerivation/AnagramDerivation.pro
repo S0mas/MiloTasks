@@ -3,6 +3,7 @@ CONFIG -= app_bundle
 CONFIG -= qt
 CONFIG += console
 QMAKE_CXXFLAGS += /std:c++latest
+QMAKE_CXXFLAGS += -std=c++17
 
 SOURCES += \
         anagramderivationsolver.cpp \

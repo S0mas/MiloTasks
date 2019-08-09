@@ -9,7 +9,7 @@ Window {
     title: qsTr("Dining Philosophers")
 
     Philosophers{}
-    Button {
+    RoundButton {
         width: parent.width
         height: 20
         onClicked: {
