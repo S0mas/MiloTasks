@@ -18,6 +18,7 @@ PathView {
         neededResource: model.display.neededResources[0] + " " + model.display.neededResources[1]
         handledResource: model.display.eating ? model.display.handledResources[0] + " " + model.display.handledResources[1] : ""
         imageSource: getImage(index)
+        animationRunning: model.display.eating
         onClicked: {
             philosopherList.removeItem(index);
         }

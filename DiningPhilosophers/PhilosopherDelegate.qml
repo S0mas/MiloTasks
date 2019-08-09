@@ -7,6 +7,7 @@ Rectangle {
     property alias neededResource: neededResourcesTextId.text
     property alias handledResource: handledResourcesTextId.text
     property alias imageSource: imageId.source
+    property alias animationRunning: scaleAnimationId.running
     signal clicked
     Column {
         width: parent.width
@@ -63,5 +64,24 @@ Rectangle {
             width: implicitWidth
             height: implicitHeight
         }
+    }
+
+    ScaleAnimator {
+        id: scaleAnimationId
+        target: philosopherDelegatId
+        from: 1.0
+        to: 0.8
+        easing.type: Easing.OutQuart
+        duration: 250
+        onStopped: scaleAnimationId2.start()
+    }
+
+    ScaleAnimator {
+        id: scaleAnimationId2
+        target: philosopherDelegatId
+        from: 0.8
+        to: 1
+        easing.type: Easing.OutQuart
+        duration: 250
     }
 }
