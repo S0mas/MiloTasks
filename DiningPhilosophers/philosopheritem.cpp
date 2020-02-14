@@ -2,14 +2,14 @@
 #include <memory>
 
 PhilosopherItem::PhilosopherItem(std::unique_ptr<Philosopher>&& philosopher, QObject *parent) : QObject(parent), philosopher(std::move(philosopher)) {
-    connect(this->philosopher.get(), SIGNAL(eatingChanged()), this, SLOT(eatingWasChanged()));
-    connect(this->philosopher.get(), SIGNAL(neededResourcesChanged()), this, SLOT(neededResourcesWasChanged()));
-    connect(this->philosopher.get(), SIGNAL(handledResourcesChanged()), this, SLOT(handledResourcesWasChanged()));
-    connect(this, SIGNAL(modifyNeededResources(const std::vector<int>&)), this->philosopher.get(), SLOT(neededResourcesModified(const std::vector<int>&)));
+    connect(this->philosopher.get(), &Philosopher::eatingChanged, this, &PhilosopherItem::eatingWasChanged);
+    connect(this->philosopher.get(), &Philosopher::neededResourcesChanged, this, &PhilosopherItem::neededResourcesWasChanged);
+    connect(this->philosopher.get(), &Philosopher::handledResourcesChanged, this, &PhilosopherItem::handledResourcesWasChanged);
+    connect(this, &PhilosopherItem::modifyNeededResources, this->philosopher.get(), &Philosopher::neededResourcesModified);
 
     thread = std::make_unique<QThread>();
     this->philosopher->moveToThread(thread.get());
-    connect(thread.get(), SIGNAL(started()), this->philosopher.get(), SLOT(start()));
+    connect(thread.get(), &QThread::started, this->philosopher.get(), &Philosopher::start);
 }
 
 PhilosopherItem::~PhilosopherItem(){

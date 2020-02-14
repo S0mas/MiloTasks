@@ -9,7 +9,7 @@ PhilosopherList::PhilosopherList(QObject *parent) : QObject(parent) {
 
     waiterThread = std::make_unique<QThread>();
     waiter.moveToThread(waiterThread.get());
-    connect(waiterThread.get(), SIGNAL(started()), &waiter, SLOT(start()));
+    connect(waiterThread.get(), &QThread::started, &waiter, &Waiter::start);
 }
 
 PhilosopherList::~PhilosopherList() {

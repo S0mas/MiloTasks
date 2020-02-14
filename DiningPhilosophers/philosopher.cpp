@@ -33,11 +33,11 @@ void Philosopher::think() {
 }
 
 Philosopher::Philosopher(const std::vector<int> &neededResourceIds, Waiter *waiter) : id(idCounter++), neededResourceIds(neededResourceIds) {
-    QObject::connect(this, SIGNAL(sendRequest(const Request&)), waiter, SLOT(receiveRequest(const Request&)));
-    QObject::connect(this, SIGNAL(releaseResource(const int)), waiter, SLOT(resourceReleased(const int)));
-    QObject::connect(this, SIGNAL(removeReservations(const int)), waiter, SLOT(reservationRemoved(const int)));
-    QObject::connect(this, SIGNAL(removeRequest(const int)), waiter, SLOT(requestRemoved(const int)));
-    QObject::connect(waiter, SIGNAL(grantPermission(const Permission&)), this, SLOT(permissionGranted(const Permission&)));
+    QObject::connect(this, &Philosopher::sendRequest, waiter, &Waiter::receiveRequest);
+    QObject::connect(this, &Philosopher::releaseResource, waiter, &Waiter::resourceReleased);
+    QObject::connect(this, &Philosopher::removeReservations, waiter, &Waiter::reservationRemoved);
+    QObject::connect(this, &Philosopher::removeRequest, waiter, &Waiter::requestRemoved);
+    QObject::connect(waiter, &Waiter::grantPermission, this, &Philosopher::permissionGranted);
 }
 
 void Philosopher::permissionGranted(const Permission &permission) {
